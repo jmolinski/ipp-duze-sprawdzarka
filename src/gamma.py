@@ -4,8 +4,8 @@ import itertools
 
 from typing import List, Set
 
-from board import Board
-from group_areas import Coords, make_neighbor_getter
+from src.board import Board
+from src.group_areas import Coords, make_neighbor_getter
 
 flatten = itertools.chain.from_iterable
 
@@ -30,12 +30,14 @@ class Gamma:
         )
 
     def try_move(self, player: int, column: int, row: int) -> bool:
-        old_value = self.board.board[row][column]
+        if self.board.board[row][column] != Board.FREE_FIELD:
+            return False
+
         self.board.board[row][column] = player
         if self._is_in_valid_state():
             return True
 
-        self.board.board[row][column] = old_value
+        self.board.board[row][column] = Board.FREE_FIELD
         return False
 
     def try_golden_move(self, player: int, column: int, row: int) -> bool:
@@ -46,9 +48,12 @@ class Gamma:
         if field == Board.FREE_FIELD or field == player:
             return False
 
+        self.board.board[row][column] = Board.FREE_FIELD
         moved = self.try_move(player, column, row)
         if moved:
             self._golden_move_done.add(player)
+        else:
+            self.board.board[row][column] = field
 
         return moved
 

@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Generator, Iterable, List, Set, Tuple
 
-from unionfind import UnionFind  # type: ignore
+from src.unionfind import UnionFind  # type: ignore
 
 Coords = Tuple[int, int]
 ListOfAreas = List[Set[Coords]]
