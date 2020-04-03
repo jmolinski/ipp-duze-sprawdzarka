@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from group_areas import Coords, ListOfAreas, group_areas_by_player
+from src.group_areas import Coords, ListOfAreas, group_areas_by_player
 
 
 class Board:
