@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Callable, Optional
 
-from src.gamma import Gamma
+from gamma.gamma import Gamma
 
 
 def gamma_new(width: int, height: int, players: int, areas: int) -> Optional[Gamma]:
