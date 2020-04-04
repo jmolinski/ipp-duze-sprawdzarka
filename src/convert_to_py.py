@@ -162,7 +162,8 @@ def convert(in_dir: str, out_dir: str) -> None:
                     convert_file(full_name, out_dir)
             elif os.path.isdir(full_name):
                 convert(full_name, "/".join([out_dir, name]))
-    raise NotAFolderException()
+    else:
+        raise NotAFolderException()
 
 
 class NotAFolderException(Exception):
