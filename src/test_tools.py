@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional, Tuple, TypedDict, TypeVar, Union
+from typing import Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
 from gamma.gamma import Gamma
 
@@ -17,16 +17,26 @@ ASSERT: Dict[str, PyCVariants] = {
     "isnotnull": {"c": "assert( {} != NULL );", "py": "assert {} is not None"},
 }
 
+EMPTY_LINE: PyCVariants = {"py": "\n", "c": "\n"}
+
 
 def call(
     f: Callable[..., T], board: Optional[Gamma], *args: int, board_name: str = "board"
 ) -> Tuple[str, T]:
     ret_val = f(*args) if board is None else f(board, *args)
     rendered_args = ", ".join(str(a) for a in args)
+    board_arg = "" if not board else f"{board_name}{', ' if rendered_args else ''}"
     return (
-        f"{f.__name__}({board_name + ', ' if board else ''} {rendered_args})",
+        f"{f.__name__}({board_arg}{rendered_args})",
         ret_val,
     )
+
+
+def native_call(
+    f: Callable[..., T], board: Optional[Gamma], *args: int, board_name: str = "board"
+) -> PyCVariants:
+    fn_call, _ = call(f, board, *args, board_name=board_name)
+    return {"py": fn_call, "c": fn_call + ";"}
 
 
 def assert_call(
@@ -63,3 +73,13 @@ def make_assert(val1: str, val2: str = None, assert_type: str = "equal") -> PyCV
         "py": ASSERT[assert_type]["py"].format(*format_arguments),
         "c": ASSERT[assert_type]["c"].format(*format_arguments),
     }
+
+
+def dispatch_statements(
+    py_statements: List[str], c_statements: List[str]
+) -> Callable[[PyCVariants], None]:
+    def store(statements: PyCVariants) -> None:
+        py_statements.append(statements["py"])
+        c_statements.append(statements["c"])
+
+    return store

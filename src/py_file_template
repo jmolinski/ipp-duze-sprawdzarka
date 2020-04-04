@@ -9,4 +9,4 @@ from part1 import (
     gamma_new,
 )
 
-{body}
+{}

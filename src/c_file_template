@@ -6,9 +6,9 @@
 #include <stdbool.h>
 
 
-int main() {
+int main() {{
 
-{body}
+{}
 
     return 0;
-}
+}}
