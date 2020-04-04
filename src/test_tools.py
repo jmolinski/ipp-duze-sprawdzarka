@@ -1,6 +1,18 @@
-from typing import Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Protocol,
+    Tuple,
+    TypedDict,
+    TypeVar,
+    Union,
+)
 
 from gamma.gamma import Gamma
+from part1 import gamma_delete, gamma_new
 
 T = TypeVar("T")
 
@@ -85,9 +97,6 @@ def make_statements_dispatcher(
     return store
 
 
-StatementStoreType = Callable[[PyCVariants], None]
-
-
 def make_comment(text: str) -> PyCVariants:
     return {"c": f"/*\n{text}\n*/", "py": f'"""\n{text}\n"""'}
 
@@ -97,3 +106,36 @@ def free_memory(var_name: str) -> PyCVariants:
         "c": f"free({var_name});\n{var_name} = NULL;",
         "py": f"del {var_name}\n{var_name} = None",
     }
+
+
+StatementStoreType = Callable[[PyCVariants], None]
+
+
+class ScenarioType(Protocol):
+    def __call__(self, store: StatementStoreType, **kwargs: Any) -> None:
+        ...
+
+
+def make_board(
+    store: StatementStoreType,
+    m: int,
+    n: int,
+    players: int,
+    areas: int,
+    name: str = "board",
+) -> Gamma:
+    statements, board = assign_call(
+        gamma_new, None, m, n, players, areas, c_type="gamma_t*", var_name=name
+    )
+    store(statements)
+    store(make_assert(name, assert_type="isnotnull"))
+    store(EMPTY_LINE)
+    assert board is not None  # to narrow return type
+    return board
+
+
+def delete_board(
+    store: StatementStoreType, board: Gamma, board_name: str = "board"
+) -> None:
+    store(EMPTY_LINE)
+    store(native_call(gamma_delete, board, board_name=board_name))
