@@ -2,42 +2,52 @@ import random
 
 from typing import Any, Dict
 
-from part1 import gamma_delete, gamma_move, gamma_new
+from part1 import gamma_move
 from test_tools import (
     EMPTY_LINE,
     ScenarioType,
     StatementStoreType,
     assert_call,
-    assign_call,
-    make_assert,
+    delete_board,
+    make_board,
     make_comment,
-    native_call,
 )
 
 
-def scenario1(store: StatementStoreType, **kwargs: Any) -> None:
-    store(
-        make_comment("prosty test, tylko gamma_move, zapelnianie planszy z kolizjami")
-    )
-    statements, board = assign_call(
-        gamma_new, None, 5, 5, 1, 100, c_type="gamma_t*", var_name="board"
-    )
-    store(statements)
-    store(make_assert("board", assert_type="isnotnull"))
-    store(EMPTY_LINE)
+def fill_board_with_collisions(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "gamma_move, fill board 1 player, unlimited areas"
+    store(make_comment(doc))
+
+    board = make_board(store, 10, 10, 3, 100)
+    player = 2
 
     for _ in range(35):
-        player = random.randint(1, 9)
         x, y = random.randint(0, 10), random.randint(0, 10)
         store(assert_call(gamma_move, board, player, x, y))
 
-    store(EMPTY_LINE)
-    store(native_call(gamma_delete, board))
+    delete_board(store, board)
+
+
+def fill_board_without_collisions(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "gamma_move, fill board no collisions, many players, unlimited areas"
+    store(make_comment(doc))
+
+    board = make_board(store, 10, 10, 30, 100)
+
+    all_fields = [(x, y) for x in range(10) for y in range(10)]
+    random.shuffle(all_fields)
+
+    for (x, y) in all_fields:
+        player = random.randint(1, 30)
+        store(assert_call(gamma_move, board, player, x, y))
+
+    delete_board(store, board)
 
 
 scenarios: Dict[str, ScenarioType] = {
-    "fill_board_with_collisions": scenario1,
+    "fill_board_with_collisions": fill_board_with_collisions,
+    "fill_board_without_collisions": fill_board_without_collisions,
 }
 
 
-__all__ = list(scenarios.keys()) + ["scenarios"]
+__all__ = ["scenarios"]
