@@ -1,7 +1,10 @@
+import itertools
+
 from typing import (
     Any,
     Callable,
     Dict,
+    Iterable,
     List,
     Optional,
     Protocol,
@@ -139,3 +142,7 @@ def delete_board(
 ) -> None:
     store(EMPTY_LINE)
     store(native_call(gamma_delete, board, board_name=board_name))
+
+
+def cycle_players(players: int, take: int) -> Iterable[int]:
+    return itertools.islice(itertools.cycle(range(1, players + 1)), take)
