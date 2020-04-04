@@ -43,9 +43,9 @@ def make_tests() -> Tuple[List[str], List[str]]:
 
 
 def main(output_file_name) -> None:
-    with open("c_file_template", "r") as f:
+    with open("templates/c_file_template", "r") as f:
         c_file_template = f.read()
-    with open("py_file_template", "r") as f:
+    with open("templates/py_file_template", "r") as f:
         py_file_template = f.read()
 
     c_statements, py_statements = make_tests()
