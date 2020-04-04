@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Tuple
 from test_scenarios import scenarios
 from test_tools import ScenarioType, make_statements_dispatcher
 
+OUTPUT_DIR = "out/"  # TODO
+
 
 def make_tests(
     scenario: ScenarioType, extras: Dict[str, Any]
@@ -29,10 +31,10 @@ def main(output_file_name: str, scenario: ScenarioType, extras: Dict[str, Any]) 
     output_file_c = c_file_template.format("\n".join(c_statements))
     output_file_py = py_file_template.format("\n".join(py_statements))
 
-    with open(output_file_name + ".c", "w") as f:
+    with open(OUTPUT_DIR + output_file_name + ".c", "w") as f:
         f.write(output_file_c)
 
-    with open(output_file_name + ".py", "w") as f:
+    with open(OUTPUT_DIR + output_file_name + ".py", "w") as f:
         f.write(output_file_py)
 
 
@@ -53,5 +55,5 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    extra_arguments = {} if sys.argv == 2 else json.loads(sys.argv[3])
+    extra_arguments = {} if len(sys.argv) == 3 else json.loads(sys.argv[4])
     main(sys.argv[1], chosen_scenario, extra_arguments)
