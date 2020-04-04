@@ -1,4 +1,3 @@
-import errno
 import os
 import re
 import sys
@@ -14,12 +13,7 @@ def preprocess_c_code(text: str) -> str:
 
 
 def remove_includes(text: str) -> str:
-    res = []
-    for line in text.split("\n"):
-        if "#include" not in line:
-            res.append(line)
-
-    return "\n".join(res)
+    return "\n".join(line for line in text.split("\n") if "#include" not in line)
 
 
 def merge_lines(text: str) -> str:
@@ -78,8 +72,8 @@ def process_assertion(line: str) -> str:
 
 def get_name(text: str) -> str:
     name = ""
-    split = list(filter(lambda s: s != '', text.split(" ")))
-    if len(split):
+    split = list(filter(lambda s: s != "", text.split(" ")))
+    if split:
         if split[-1] == "[]":
             if len(split) > 1:
                 name = split[-2]
@@ -122,13 +116,15 @@ def gen_py(file_name: str) -> str:
         code = preprocess_c_code(f.read())
     for line in code.split("\n"):
         processed = process_line(line)
-        if processed != "":
+        if processed:
             res += [processed]
 
     return "\n".join(res)
 
 
-def convert_file(file_name: str, out_dir_name: str, out_file_name: Optional[str] = None) -> bool:
+def convert_file(
+    file_name: str, out_dir_name: str, out_file_name: Optional[str] = None
+) -> bool:
     if file_name[-2:] != ".c":
         return False
 
@@ -136,7 +132,9 @@ def convert_file(file_name: str, out_dir_name: str, out_file_name: Optional[str]
         template = t.read()
 
     py_code = gen_py(file_name)
-    strcmp = "def strcmp(str1: str, str2: str) -> int: return (str1 > str2) - (str1 < str2)"
+    strcmp = (
+        "def strcmp(str1: str, str2: str) -> int: return (str1 > str2) - (str1 < str2)"
+    )
 
     final = re.sub(r" +", " ", "\n".join([strcmp, "", py_code]))
 
@@ -146,18 +144,15 @@ def convert_file(file_name: str, out_dir_name: str, out_file_name: Optional[str]
     out_name = "/".join([out_dir_name, out_file_name])
 
     if not os.path.exists(os.path.dirname(out_name)):
-        try:
-            os.makedirs(os.path.dirname(out_name))
-        except OSError as exc:  # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
+        os.makedirs(os.path.dirname(out_name))
 
     with open(out_name, "w") as f:
         f.write(template.format(final))
+
     return True
 
 
-def convert(in_dir: str, out_dir: str) -> bool:
+def convert(in_dir: str, out_dir: str) -> None:
     if os.path.isdir(in_dir):
         for name in os.listdir(in_dir):
             print(name, out_dir)
@@ -167,8 +162,11 @@ def convert(in_dir: str, out_dir: str) -> bool:
                     convert_file(full_name, out_dir)
             elif os.path.isdir(full_name):
                 convert(full_name, "/".join([out_dir, name]))
-        return True
-    return False
+    raise NotAFolderException()
+
+
+class NotAFolderException(Exception):
+    pass
 
 
 if __name__ == "__main__":
@@ -180,5 +178,7 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    if not convert(*sys.argv[1:]):
+    try:
+        convert(*sys.argv[1:])
+    except NotAFolderException:
         print("It's not a folder")
