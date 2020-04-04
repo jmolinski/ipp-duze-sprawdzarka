@@ -83,3 +83,17 @@ def make_statements_dispatcher(
         c_statements.append(statements["c"])
 
     return store
+
+
+StatementStoreType = Callable[[PyCVariants], None]
+
+
+def make_comment(text: str) -> PyCVariants:
+    return {"c": f"/*\n{text}\n*/", "py": f'"""\n{text}\n"""'}
+
+
+def free_memory(var_name: str) -> PyCVariants:
+    return {
+        "c": f"free({var_name});\n{var_name} = NULL;",
+        "py": f"del {var_name}\n{var_name} = None",
+    }
