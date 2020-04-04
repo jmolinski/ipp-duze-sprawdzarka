@@ -1,11 +1,12 @@
 import random
 
-from typing import Callable
+from typing import Any, Dict
 
 from part1 import gamma_delete, gamma_move, gamma_new
 from test_tools import (
     EMPTY_LINE,
-    PyCVariants,
+    ScenarioType,
+    StatementStoreType,
     assert_call,
     assign_call,
     make_assert,
@@ -13,10 +14,8 @@ from test_tools import (
     native_call,
 )
 
-__all__ = ["scenario1"]
 
-
-def scenario1(store: Callable[[PyCVariants], None]) -> None:
+def scenario1(store: StatementStoreType, **kwargs: Any) -> None:
     store(
         make_comment("prosty test, tylko gamma_move, zapelnianie planszy z kolizjami")
     )
@@ -34,3 +33,11 @@ def scenario1(store: Callable[[PyCVariants], None]) -> None:
 
     store(EMPTY_LINE)
     store(native_call(gamma_delete, board))
+
+
+scenarios: Dict[str, ScenarioType] = {
+    "fill_board_with_collisions": scenario1,
+}
+
+
+__all__ = list(scenarios.keys()) + ["scenarios"]
