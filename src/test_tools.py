@@ -75,7 +75,7 @@ def make_assert(val1: str, val2: str = None, assert_type: str = "equal") -> PyCV
     }
 
 
-def dispatch_statements(
+def make_statements_dispatcher(
     py_statements: List[str], c_statements: List[str]
 ) -> Callable[[PyCVariants], None]:
     def store(statements: PyCVariants) -> None:
