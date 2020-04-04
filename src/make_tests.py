@@ -1,30 +1,30 @@
+import json
 import sys
 
-from typing import Callable, List, Tuple
+from typing import Any, Dict, List, Tuple
 
-import test_scenarios
-
-from test_tools import StatementStoreType, make_statements_dispatcher
-
-ScenarioType = Callable[[StatementStoreType], None]
+from test_scenarios import scenarios
+from test_tools import ScenarioType, make_statements_dispatcher
 
 
-def make_tests(scenario: ScenarioType) -> Tuple[List[str], List[str]]:
+def make_tests(
+    scenario: ScenarioType, extras: Dict[str, Any]
+) -> Tuple[List[str], List[str]]:
     spython: List[str] = []
     sclang: List[str] = []
 
-    scenario(make_statements_dispatcher(spython, sclang))
+    scenario(make_statements_dispatcher(spython, sclang), **extras)
 
     return sclang, spython
 
 
-def main(output_file_name: str, scenario: ScenarioType) -> None:
+def main(output_file_name: str, scenario: ScenarioType, extras: Dict[str, Any]) -> None:
     with open("c_file_template", "r") as f:
         c_file_template = f.read()
     with open("py_file_template", "r") as f:
         py_file_template = f.read()
 
-    c_statements, py_statements = make_tests(scenario)
+    c_statements, py_statements = make_tests(scenario, extras)
     output_file_c = c_file_template.format("\n".join(c_statements))
     output_file_py = py_file_template.format("\n".join(py_statements))
 
@@ -44,13 +44,13 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
-        chosen_scenario: ScenarioType = getattr(test_scenarios, sys.argv[2])
-    except AttributeError:
-        available_scenarios = test_scenarios.__all__
+        chosen_scenario: ScenarioType = scenarios[sys.argv[2]]
+    except KeyError:
         print(
             "scenario name not recognized\n"
-            f"[available scenarios {available_scenarios}]"
+            f"[available scenarios {list(scenarios.keys())}]"
         )
         sys.exit(1)
 
-    main(sys.argv[1], chosen_scenario)
+    extra_arguments = {} if sys.argv == 2 else json.loads(sys.argv[3])
+    main(sys.argv[1], chosen_scenario, extra_arguments)
