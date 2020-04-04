@@ -18,10 +18,11 @@ def make_tests(
     return sclang, spython
 
 
+
 def main(output_file_name: str, scenario: ScenarioType, extras: Dict[str, Any]) -> None:
-    with open("c_file_template", "r") as f:
+    with open("templates/c_file_template", "r") as f:
         c_file_template = f.read()
-    with open("py_file_template", "r") as f:
+    with open("templates/py_file_template", "r") as f:
         py_file_template = f.read()
 
     c_statements, py_statements = make_tests(scenario, extras)
