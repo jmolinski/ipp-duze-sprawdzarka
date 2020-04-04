@@ -128,3 +128,6 @@ pip-selfcheck.json
 .secrets
 venv/
 venv
+
+src/out/*.c
+src/out/*.py
