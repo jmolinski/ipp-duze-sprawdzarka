@@ -1,0 +1,14 @@
+#include <stdint.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+#include "gamma.h"
+#include <stdbool.h>
+
+
+int main() {
+
+{body}
+
+    return 0;
+}
