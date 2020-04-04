@@ -1,0 +1,12 @@
+from part1 import (
+    gamma_board,
+    gamma_busy_fields,
+    gamma_delete,
+    gamma_free_fields,
+    gamma_golden_move,
+    gamma_golden_possible,
+    gamma_move,
+    gamma_new,
+)
+
+{}

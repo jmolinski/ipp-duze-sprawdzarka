@@ -4,8 +4,8 @@ import itertools
 
 from typing import List, Set
 
-from src.board import Board
-from src.group_areas import Coords, make_neighbor_getter
+from gamma.board import Board
+from gamma.group_areas import Coords, make_neighbor_getter
 
 flatten = itertools.chain.from_iterable
 
