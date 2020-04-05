@@ -30,6 +30,8 @@ class Gamma:
         )
 
     def try_move(self, player: int, column: int, row: int) -> bool:
+        if player == 0:
+            return False
         if self.board.board[row][column] != Board.FREE_FIELD:
             return False
 
@@ -41,6 +43,8 @@ class Gamma:
         return False
 
     def try_golden_move(self, player: int, column: int, row: int) -> bool:
+        if player == 0:
+            return False
         if player in self._golden_move_done:
             return False
 
@@ -58,6 +62,8 @@ class Gamma:
         return moved
 
     def get_free_fields(self, player: int) -> int:
+        if player == 0:
+            return 0
         grouped_areas = self.board.get_grouped_areas()
         free_coords = flatten(grouped_areas.get(Board.FREE_FIELD, []))
 
@@ -83,6 +89,8 @@ class Gamma:
         return False
 
     def get_busy_fields(self, player: int) -> int:
+        if player == 0:
+            return 0
         return sum(row.count(player) for row in self.board.board)
 
     def is_golden_possible(self, player: int) -> bool:
