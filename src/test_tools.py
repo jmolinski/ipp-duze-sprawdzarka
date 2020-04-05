@@ -1,5 +1,5 @@
 import itertools
-
+import random
 from typing import (
     Any,
     Callable,
@@ -184,3 +184,7 @@ def get_coords_around(gamma: Gamma, x: int, y: int, r: int = 1) -> List[Coords]:
         coords = new_coords
 
     return list(coords)
+
+
+def make_random_id() -> str:
+    return str(random.randint(10 ** 8, 10 ** 9 - 1))
