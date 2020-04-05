@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Tuple
 from test_scenarios import scenarios
 from test_tools import (
     ScenarioType,
-    make_statements_dispatcher,
     make_comment,
     make_random_id,
+    make_statements_dispatcher,
 )
 
 OUTPUT_DIR = "out/"  # TODO
@@ -21,7 +21,8 @@ def make_tests(
     sclang: List[str] = []
     store = make_statements_dispatcher(spython, sclang)
 
-    store(make_comment(f"scenario: {scenario.__name__}\nuuid: {unique_id}"))
+    scenario_name = [k for k in scenarios if scenarios[k] == scenario][0]
+    store(make_comment(f"scenario: {scenario_name}\nuuid: {unique_id}"))
     scenario(store, **extras)
 
     return sclang, spython
@@ -36,7 +37,7 @@ def run_scenario(
         py_file_template = f.read()
 
     test_id = make_random_id()
-    if output_file_name == 'AUTO':
+    if output_file_name == "AUTO":
         output_file_name = test_id
 
     c_statements, py_statements = make_tests(scenario, test_id, extras)
@@ -50,7 +51,7 @@ def run_scenario(
         f.write(output_file_py)
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < 3:
         print(
             "usage: python make_tests.py output_file scenario\n"
