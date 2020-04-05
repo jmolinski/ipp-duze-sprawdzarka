@@ -1,18 +1,24 @@
 import random
-from typing import Any, Dict
+
+from typing import Any, Dict, List
 
 from part1 import (
     gamma_busy_fields,
     gamma_free_fields,
+    gamma_golden_move,
     gamma_golden_possible,
     gamma_move,
 )
 from test_tools import (
+    EMPTY_LINE,
+    Coords,
     ScenarioType,
     StatementStoreType,
     assert_call,
     cycle_players,
     delete_board,
+    flatten,
+    get_all_board_coords,
     make_board,
     make_comment,
 )
@@ -128,6 +134,55 @@ def test_strip(store: StatementStoreType, **kwargs: Any) -> None:
         store(assert_call(gamma_busy_fields, board, player))
         store(assert_call(gamma_free_fields, board, player))
 
+
+def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "golden_move, limited areas"
+    store(make_comment(doc))
+
+    players_n = 3
+    board = make_board(store, 8, 8, players_n, 12)
+
+    all_fields = get_all_board_coords(board)
+    fields_to_fill = random.sample(all_fields, k=players_n * 10)
+    remaining_fields = list(set(all_fields) - set(fields_to_fill))
+
+    player_fields: Dict[int, List[Coords]] = {}
+    # each player picks 10 random fields
+    for field, player in zip(
+        fields_to_fill, cycle_players(players=players_n, take=1000)
+    ):
+        store(assert_call(gamma_move, board, player, *field))
+        player_fields[player] = player_fields.get(player, []) + [field]
+
+    players = list(range(1, players_n + 1))
+
+    def can_move(p: int) -> bool:
+        return bool(gamma_free_fields(board, p) or gamma_golden_possible(board, p))
+
+    # this while can enter an infinite loop (golden_possible != golden_move)
+    # so this needs to be guarded against -- thus max cycles limit
+    for _ in range(25):  # max cycles
+        if not any(can_move(p) for p in players):
+            break
+
+        store(EMPTY_LINE)
+
+        for p in players:
+            store(assert_call(gamma_free_fields, board, p))
+            store(assert_call(gamma_busy_fields, board, p))
+            store(assert_call(gamma_golden_possible, board, p))
+
+            if gamma_free_fields(board, p):
+                free_fields = list(
+                    flatten(board.board.get_grouped_areas()[board.board.FREE_FIELD])
+                )
+                field = random.choice(free_fields)
+                store(assert_call(gamma_move, board, p, *field))
+            else:  # gamma_golden_possible(board, p) == True
+                other_player = random.choice(list(set(players) - {p}))
+                field = player_fields[other_player].pop()
+                store(assert_call(gamma_golden_move, board, p, *field))
+
     delete_board(store, board)
 
 
@@ -139,6 +194,7 @@ scenarios: Dict[str, ScenarioType] = {
     "test_free_fields": test_free_fields,
     "test_golden_possible": test_golden_possible,
     "test_strip": test_strip,
+    "test_golden_move": test_golden_move,
 }
 
 __all__ = ["scenarios"]

@@ -1,4 +1,5 @@
 import itertools
+import random
 
 from typing import (
     Any,
@@ -8,13 +9,15 @@ from typing import (
     List,
     Optional,
     Protocol,
+    Set,
     Tuple,
     TypedDict,
     TypeVar,
     Union,
 )
 
-from gamma.gamma import Gamma
+from gamma.gamma import Coords, Gamma
+from gamma.group_areas import make_neighbor_getter
 from part1 import gamma_delete, gamma_new
 
 T = TypeVar("T")
@@ -146,3 +149,47 @@ def delete_board(
 
 def cycle_players(players: int, take: int) -> Iterable[int]:
     return itertools.islice(itertools.cycle(range(1, players + 1)), take)
+
+
+def get_field_neighbors(gamma: Gamma, x: int, y: int) -> Set[Coords]:
+    getter = make_neighbor_getter(gamma.board.board)
+    return set(getter(x, y))
+
+
+def get_all_board_coords(gamma: Gamma) -> List[Coords]:
+    return list(itertools.product(range(gamma.board.height), range(gamma.board.width)))
+
+
+def get_edge_coords(gamma: Gamma) -> List[Coords]:
+    return [
+        c
+        for c in get_all_board_coords(gamma)
+        if len(get_field_neighbors(gamma, *c)) < 4
+    ]
+
+
+def get_coords_around(gamma: Gamma, x: int, y: int, r: int = 1) -> List[Coords]:
+    """returns inclusive list! with (x, y)
+    f(r) = PI(r-1)(r-1)
+    len(returned_list) ~ f(r) [not strictly true xD]
+    for 0 < r =< 3: f(r+1) is almost exactly len(returned_list)
+    for 3 < r < 12: f(r-1) <= len(returned_list) <= f(r)
+    """
+
+    coords = {(x, y)}
+
+    for _ in range(r):
+        new_coords = coords.copy()
+        for (x, y) in coords:
+            new_coords |= get_field_neighbors(gamma, x, y)
+        coords = new_coords
+
+    return list(coords)
+
+
+def make_random_id() -> str:
+    return str(random.randint(10 ** 8, 10 ** 9 - 1))
+
+
+def flatten(s: Iterable[Iterable[T]]) -> Iterable[T]:
+    return itertools.chain.from_iterable(s)
