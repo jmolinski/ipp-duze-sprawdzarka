@@ -1,5 +1,4 @@
 import random
-
 from typing import Any, Dict
 
 from part1 import (
@@ -106,6 +105,32 @@ def test_golden_possible(store: StatementStoreType, **kwargs: Any) -> None:
     delete_board(store, board)
 
 
+def test_strip(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "board is either vertical or horizontal strip"
+    store(make_comment(doc))
+
+    max_size = int(kwargs.get("max_size", 2137))
+    players = int(kwargs.get("players", 1337))
+    areas = int(kwargs.get("areas", 1337))
+    chunk_size = int(kwargs.get("chunk_size", 50))
+    tests = int(kwargs.get("tests", max_size * 4))
+
+    width, height = 1, random.randint(0, max_size)
+    if kwargs.get("horizontal", False):
+        height, width = width, height
+
+    board = make_board(store, width, height, players, areas)
+
+    for player in cycle_players(players=players, take=tests):
+        x, y = random.randint(0, width), random.randint(0, height)
+        store(assert_call(gamma_move, board, player, x, y))
+        store(assert_call(gamma_golden_possible, board, player))
+        store(assert_call(gamma_busy_fields, board, player))
+        store(assert_call(gamma_free_fields, board, player))
+
+    delete_board(store, board)
+
+
 scenarios: Dict[str, ScenarioType] = {
     "fill_board_with_collisions": fill_board_with_collisions,
     "fill_board_without_collisions": fill_board_without_collisions,
@@ -113,7 +138,7 @@ scenarios: Dict[str, ScenarioType] = {
     "fill_board_with_areas_limit": fill_board_with_areas_limit,
     "test_free_fields": test_free_fields,
     "test_golden_possible": test_golden_possible,
+    "test_strip": test_strip,
 }
-
 
 __all__ = ["scenarios"]

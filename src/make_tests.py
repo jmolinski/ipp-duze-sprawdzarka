@@ -20,7 +20,6 @@ def make_tests(
     return sclang, spython
 
 
-
 def main(output_file_name: str, scenario: ScenarioType, extras: Dict[str, Any]) -> None:
     with open("templates/c_file_template", "r") as f:
         c_file_template = f.read()
