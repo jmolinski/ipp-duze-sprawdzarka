@@ -1,5 +1,5 @@
+import itertools as it
 import random
-
 from typing import Any, Dict, List
 
 from part1 import (
@@ -111,6 +111,48 @@ def test_golden_possible(store: StatementStoreType, **kwargs: Any) -> None:
     delete_board(store, board)
 
 
+def test_strip(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "board is either vertical or horizontal strip"
+    store(make_comment(doc))
+
+    max_size = int(kwargs.get("max_size", 64))
+    players = int(kwargs.get("players", 8))
+    areas = int(kwargs.get("areas", 4))
+    chunk_size = int(kwargs.get("chunk_size", 32))
+    tests = int(kwargs.get("tests", max_size * 4))
+
+    width, height = 1, random.randint(1, max_size)
+    if kwargs.get("horizontal", False):
+        height, width = width, height
+
+    board = make_board(store, width, height, players, areas)
+
+    def run_checks_for_all_players() -> None:
+        for p in range(1, players + 1):
+            store(assert_call(gamma_golden_possible, board, p))
+            store(assert_call(gamma_busy_fields, board, p))
+            store(assert_call(gamma_free_fields, board, p))
+            if random.randint(0, 100) < 10:
+                store(
+                    assert_call(
+                        gamma_golden_move,
+                        board,
+                        player,
+                        random.randint(0, width),
+                        random.randint(0, height),
+                    )
+                )
+
+    player_iterator = cycle_players(players=players, take=tests)
+    for _ in range(round(tests / chunk_size)):
+        for player in it.islice(player_iterator, chunk_size):
+            x, y = random.randint(0, width), random.randint(0, height)
+            store(assert_call(gamma_move, board, player, x, y))
+        run_checks_for_all_players()
+
+    delete_board(store, board)
+
+
 def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
     doc = "golden_move, limited areas"
     store(make_comment(doc))
@@ -169,8 +211,8 @@ scenarios: Dict[str, ScenarioType] = {
     "fill_board_with_areas_limit": fill_board_with_areas_limit,
     "test_free_fields": test_free_fields,
     "test_golden_possible": test_golden_possible,
+    "test_strip": test_strip,
     "test_golden_move": test_golden_move,
 }
-
 
 __all__ = ["scenarios"]
