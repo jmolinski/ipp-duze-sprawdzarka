@@ -68,7 +68,7 @@ def main() -> None:
         )
         sys.exit(1)
 
-    extra_arguments = {} if len(sys.argv) == 3 else json.loads(sys.argv[4])
+    extra_arguments = {} if len(sys.argv) == 3 else json.loads(sys.argv[3])
     run_scenario(sys.argv[1], chosen_scenario, extra_arguments)
 
 
