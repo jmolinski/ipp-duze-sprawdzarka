@@ -142,7 +142,12 @@ def test_strip(store: StatementStoreType, **kwargs: Any) -> None:
                     )
                 )
 
-    for i, player in enumerate(cycle_players(players=players, take=tests)):
+    player_iterator = cycle_players(players=players, take=tests)
+    for _ in range(round(tests / chunk_size)):
+        for player in it.islice(player_iterator, chunk_size):
+            x, y = random.randint(0, width), random.randint(0, height)
+            store(assert_call(gamma_move, board, player, x, y))
+        run_checks_for_all_players()
         x, y = random.randint(0, width), random.randint(0, height)
         store(assert_call(gamma_move, board, player, x, y))
         if i % chunk_size == 0 and i != 0:
