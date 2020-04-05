@@ -1,3 +1,4 @@
+import itertools as it
 import random
 from typing import Any, Dict, List
 
@@ -126,8 +127,8 @@ def test_strip(store: StatementStoreType, **kwargs: Any) -> None:
 
     board = make_board(store, width, height, players, areas)
 
-    def end_chunk() -> None:
-        for p in range(1,players+1):
+    def run_checks_for_all_players() -> None:
+        for p in range(1, players + 1):
             store(assert_call(gamma_golden_possible, board, p))
             store(assert_call(gamma_busy_fields, board, p))
             store(assert_call(gamma_free_fields, board, p))
@@ -148,11 +149,6 @@ def test_strip(store: StatementStoreType, **kwargs: Any) -> None:
             x, y = random.randint(0, width), random.randint(0, height)
             store(assert_call(gamma_move, board, player, x, y))
         run_checks_for_all_players()
-        x, y = random.randint(0, width), random.randint(0, height)
-        store(assert_call(gamma_move, board, player, x, y))
-        if i % chunk_size == 0 and i != 0:
-            end_chunk()
-    end_chunk()
 
     delete_board(store, board)
 
@@ -171,7 +167,7 @@ def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
     player_fields: Dict[int, List[Coords]] = {}
     # each player picks 10 random fields
     for field, player in zip(
-            fields_to_fill, cycle_players(players=players_n, take=1000)
+        fields_to_fill, cycle_players(players=players_n, take=1000)
     ):
         store(assert_call(gamma_move, board, player, *field))
         player_fields[player] = player_fields.get(player, []) + [field]
