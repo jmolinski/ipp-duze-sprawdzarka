@@ -131,3 +131,8 @@ venv
 
 src/out/*.c
 src/out/*.py
+
+*.local
+*.*.local
+
+src/out/*/
