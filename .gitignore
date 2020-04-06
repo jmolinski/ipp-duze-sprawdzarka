@@ -136,3 +136,4 @@ src/out/*.py
 *.*.local
 
 src/out/*/
+src/out/*.zip

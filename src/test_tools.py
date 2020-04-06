@@ -18,7 +18,7 @@ from typing import (
 
 from gamma.gamma import Coords, Gamma
 from gamma.group_areas import make_neighbor_getter
-from part1 import gamma_delete, gamma_new
+from part1 import gamma_board, gamma_delete, gamma_new
 
 T = TypeVar("T")
 
@@ -33,6 +33,7 @@ ASSERT: Dict[str, PyCVariants] = {
     "notequal": {"c": "assert( {} != {} );", "py": "assert {} != {}"},
     "isnull": {"c": "assert( {} == NULL );", "py": "assert {} is None"},
     "isnotnull": {"c": "assert( {} != NULL );", "py": "assert {} is not None"},
+    "stringequal": {"c": "assert( strcmp({}, {}) == 0);", "py": "assert {} == {}"},
 }
 
 EMPTY_LINE: PyCVariants = {"py": "\n", "c": "\n"}
@@ -193,3 +194,16 @@ def make_random_id() -> str:
 
 def flatten(s: Iterable[Iterable[T]]) -> Iterable[T]:
     return itertools.chain.from_iterable(s)
+
+
+def assert_board_equal(store: StatementStoreType, board: Gamma) -> None:
+    store(EMPTY_LINE)
+    var_name = "board" + str(make_random_id())
+    statements, rendered = assign_call(
+        gamma_board, board, c_type="char*", var_name=var_name
+    )
+    store(statements)
+    store(make_assert(var_name, assert_type="isnotnull"))
+    comp_str = f'"{repr(rendered)[1:-1]}"'  # 'elo' -> "elo"
+    store(make_assert(var_name, comp_str, assert_type="stringequal"))
+    store(free_memory(var_name))
