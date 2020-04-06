@@ -167,7 +167,6 @@ def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
 
     all_fields = get_all_board_coords(board)
     fields_to_fill = random.sample(all_fields, k=players_n * 10)
-    remaining_fields = list(set(all_fields) - set(fields_to_fill))
 
     player_fields: Dict[int, List[Coords]] = {}
     # each player picks 10 random fields

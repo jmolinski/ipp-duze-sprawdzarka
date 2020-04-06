@@ -33,7 +33,7 @@ ASSERT: Dict[str, PyCVariants] = {
     "notequal": {"c": "assert( {} != {} );", "py": "assert {} != {}"},
     "isnull": {"c": "assert( {} == NULL );", "py": "assert {} is None"},
     "isnotnull": {"c": "assert( {} != NULL );", "py": "assert {} is not None"},
-    "stringequal": {"c": "assert( strcmp({}, {}) == 0);", "py": "assert {} == {}"},
+    "stringequal": {"c": "assert( strcmp({}, \n{}) == 0);", "py": "assert {} == {}"},
 }
 
 EMPTY_LINE: PyCVariants = {"py": "\n", "c": "\n"}
@@ -204,6 +204,6 @@ def assert_board_equal(store: StatementStoreType, board: Gamma) -> None:
     )
     store(statements)
     store(make_assert(var_name, assert_type="isnotnull"))
-    comp_str = f'"{repr(rendered)[1:-1]}"'  # 'elo' -> "elo"
+    comp_str = '\n'.join(f'"{row}\\n"' for row in rendered.splitlines() if row)
     store(make_assert(var_name, comp_str, assert_type="stringequal"))
     store(free_memory(var_name))
