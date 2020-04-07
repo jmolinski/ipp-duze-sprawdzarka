@@ -1,5 +1,6 @@
 import itertools as it
 import random
+
 from typing import Any, Dict, List
 
 from part1 import (
@@ -14,6 +15,7 @@ from test_tools import (
     Coords,
     ScenarioType,
     StatementStoreType,
+    assert_board_equal,
     assert_call,
     cycle_players,
     delete_board,
@@ -78,6 +80,9 @@ def fill_board_with_areas_limit(store: StatementStoreType, **kwargs: Any) -> Non
     for player in cycle_players(players=3, take=5 * 5 * 3):
         x, y = random.randint(0, 4), random.randint(0, 4)
         store(assert_call(gamma_move, board, player, x, y))
+
+    if kwargs.get("print_board", False):
+        assert_board_equal(store, board)
 
     delete_board(store, board)
 
@@ -162,7 +167,6 @@ def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
 
     all_fields = get_all_board_coords(board)
     fields_to_fill = random.sample(all_fields, k=players_n * 10)
-    remaining_fields = list(set(all_fields) - set(fields_to_fill))
 
     player_fields: Dict[int, List[Coords]] = {}
     # each player picks 10 random fields
@@ -204,6 +208,20 @@ def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
     delete_board(store, board)
 
 
+def test_gamma_board(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "gamma_move + gamma_board"
+    store(make_comment(doc))
+
+    board = make_board(store, 7, 7, 5, 9)
+
+    for player in cycle_players(players=5, take=7 * 7):
+        x, y = random.randint(0, 7), random.randint(0, 7)
+        store(assert_call(gamma_move, board, player, x, y))
+        assert_board_equal(store, board)
+
+    delete_board(store, board)
+
+
 scenarios: Dict[str, ScenarioType] = {
     "fill_board_with_collisions": fill_board_with_collisions,
     "fill_board_without_collisions": fill_board_without_collisions,
@@ -213,6 +231,7 @@ scenarios: Dict[str, ScenarioType] = {
     "test_golden_possible": test_golden_possible,
     "test_strip": test_strip,
     "test_golden_move": test_golden_move,
+    "test_gamma_board": test_gamma_board,
 }
 
 __all__ = ["scenarios"]
