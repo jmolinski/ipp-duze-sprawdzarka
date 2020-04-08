@@ -19,8 +19,11 @@ class Board:
         self.board = [[-1] * width for _ in range(height)]
 
     def print(self) -> str:
+        def print_player(p: int) -> str:
+            return str(p) if p < 10 else f"[{p}]"
+
         def row_to_string(row: List[int]) -> str:
-            return "".join(["." if c == -1 else str(c) for c in row]) + "\n"
+            return "".join(["." if c == -1 else print_player(c) for c in row]) + "\n"
 
         return "".join(reversed(list(row_to_string(row) for row in self.board)))
 

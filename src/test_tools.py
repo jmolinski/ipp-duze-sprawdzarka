@@ -33,7 +33,7 @@ ASSERT: Dict[str, PyCVariants] = {
     "notequal": {"c": "assert( {} != {} );", "py": "assert {} != {}"},
     "isnull": {"c": "assert( {} == NULL );", "py": "assert {} is None"},
     "isnotnull": {"c": "assert( {} != NULL );", "py": "assert {} is not None"},
-    "stringequal": {"c": "assert( strcmp({}, \n{}) == 0);", "py": "assert {} == {}"},
+    "stringequal": {"c": "assert( strcmp({}, \n{}) == 0);", "py": "assert {} == ({})"},
 }
 
 EMPTY_LINE: PyCVariants = {"py": "\n", "c": "\n"}
