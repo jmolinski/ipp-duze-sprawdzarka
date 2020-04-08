@@ -3,6 +3,7 @@ import random
 
 from typing import Any, Dict, List
 
+from gamma.board import Board
 from part1 import (
     gamma_busy_fields,
     gamma_free_fields,
@@ -24,6 +25,8 @@ from test_tools import (
     make_board,
     make_comment,
 )
+
+FREE_FIELD = Board.FREE_FIELD
 
 
 def fill_board_with_collisions(store: StatementStoreType, **kwargs: Any) -> None:
@@ -195,9 +198,7 @@ def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
             store(assert_call(gamma_golden_possible, board, p))
 
             if gamma_free_fields(board, p):
-                free_fields = list(
-                    flatten(board.board.get_grouped_areas()[board.board.FREE_FIELD])
-                )
+                free_fields = list(flatten(board.board.get_grouped_areas()[FREE_FIELD]))
                 field = random.choice(free_fields)
                 store(assert_call(gamma_move, board, p, *field))
             else:  # gamma_golden_possible(board, p) == True
@@ -242,6 +243,66 @@ def test_gamma_board(store: StatementStoreType, **kwargs: Any) -> None:
     delete_board(store, board)
 
 
+def test_random_actions(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "random actions, total chaos"
+    store(make_comment(doc))
+
+    height, width = int(kwargs.get("height", 7)), int(kwargs.get("width", 7))
+    players, areas = int(kwargs.get("players", 4)), int(kwargs.get("areas", 7))
+
+    board = make_board(store, height, width, players, areas)
+
+    for player in cycle_players(players=players, take=height * width * 2):
+        grouped_areas = board.board.get_grouped_areas()
+
+        if random.random() < 0.85:
+            # default - random field
+            x, y = random.randint(0, height - 1), random.randint(0, width - 1)
+            if random.random() < 0.7:
+                # only empty fields
+                if FREE_FIELD in grouped_areas:
+                    fields = list(flatten(grouped_areas[FREE_FIELD]))
+                    x, y = random.choice(fields)
+
+            store(assert_call(gamma_move, board, player, x, y))
+
+        if random.random() < 0.5:  # second move
+            if random.random() < 0.1:  # x, y may be outside of board
+                x, y = random.randint(-1, height), random.randint(-1, width)
+            else:  # always within board
+                x, y = random.randint(0, height - 1), random.randint(0, width - 1)
+            x, y = random.randint(0, height - 1), random.randint(0, width - 1)
+            store(assert_call(gamma_move, board, player, x, y))
+
+        if random.random() < 0.1:
+            store(assert_call(gamma_busy_fields, board, player))
+
+        if random.random() < 0.1:
+            store(assert_call(gamma_free_fields, board, player))
+
+        if random.random() < 0.1:
+            store(assert_call(gamma_golden_possible, board, player))
+
+        if random.random() < 0.05:
+            # default - player_to_attack is self or empty
+            player_to_attack = random.choice([FREE_FIELD, player])
+            if random.random() < 0.95:
+                others = list(set(grouped_areas.keys()) - {FREE_FIELD, player})
+                if others:
+                    player_to_attack = random.choice(others)
+
+            if player_to_attack in grouped_areas:
+                other_players_fields = list(flatten(grouped_areas[player_to_attack]))
+                if other_players_fields:
+                    field = random.choice(other_players_fields)
+                    store(assert_call(gamma_golden_move, board, player, *field))
+
+        if random.random() < 0.05:
+            assert_board_equal(store, board)
+
+    delete_board(store, board)
+
+
 scenarios: Dict[str, ScenarioType] = {
     "fill_board_with_collisions": fill_board_with_collisions,
     "fill_board_without_collisions": fill_board_without_collisions,
@@ -253,6 +314,7 @@ scenarios: Dict[str, ScenarioType] = {
     "test_golden_move": test_golden_move,
     "test_gamma_board": test_gamma_board,
     "test_many_boards": test_many_boards,
+    "test_random_actions": test_random_actions,
 }
 
 __all__ = ["scenarios"]
