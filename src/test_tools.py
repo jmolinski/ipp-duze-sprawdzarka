@@ -196,14 +196,16 @@ def flatten(s: Iterable[Iterable[T]]) -> Iterable[T]:
     return itertools.chain.from_iterable(s)
 
 
-def assert_board_equal(store: StatementStoreType, board: Gamma) -> None:
+def assert_board_equal(
+    store: StatementStoreType, board: Gamma, board_name: str = "board"
+) -> None:
     store(EMPTY_LINE)
     var_name = "board" + str(make_random_id())
     statements, rendered = assign_call(
-        gamma_board, board, c_type="char*", var_name=var_name
+        gamma_board, board, c_type="char*", var_name=var_name, board_name=board_name
     )
     store(statements)
     store(make_assert(var_name, assert_type="isnotnull"))
-    comp_str = '\n'.join(f'"{row}\\n"' for row in rendered.splitlines() if row)
+    comp_str = "\n".join(f'"{row}\\n"' for row in rendered.splitlines() if row)
     store(make_assert(var_name, comp_str, assert_type="stringequal"))
     store(free_memory(var_name))

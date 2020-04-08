@@ -94,7 +94,7 @@ def test_free_fields(store: StatementStoreType, **kwargs: Any) -> None:
     board = make_board(store, 8, 8, 5, 8)
 
     for player in cycle_players(players=5, take=8 * 8 * 2):
-        x, y = random.randint(0, 4), random.randint(0, 4)
+        x, y = random.randint(0, 7), random.randint(0, 7)
         store(assert_call(gamma_move, board, player, x, y))
         store(assert_call(gamma_busy_fields, board, player))
         store(assert_call(gamma_free_fields, board, player))
@@ -109,7 +109,7 @@ def test_golden_possible(store: StatementStoreType, **kwargs: Any) -> None:
     board = make_board(store, 4, 4, 8, 3)
 
     for player in cycle_players(players=8, take=4 * 4):
-        x, y = random.randint(0, 4), random.randint(0, 4)
+        x, y = random.randint(0, 3), random.randint(0, 3)
         store(assert_call(gamma_move, board, player, x, y))
         store(assert_call(gamma_golden_possible, board, player))
 
@@ -208,6 +208,26 @@ def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
     delete_board(store, board)
 
 
+def test_many_boards(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "gamma_move + gamma_board, a few boards at the same time"
+    store(make_comment(doc))
+
+    b1 = make_board(store, 4, 4, 4, 16, name="board1")
+    b2 = make_board(store, 4, 4, 4, 16, name="board2")
+    b3 = make_board(store, 4, 4, 4, 16, name="board3")
+
+    for player in cycle_players(players=4, take=3 * 16):
+        for board, name in [(b1, "board1"), (b2, "board2"), (b3, "board3")]:
+            x, y = random.randint(0, 3), random.randint(0, 3)
+            store(assert_call(gamma_move, board, player, x, y, board_name=name))
+            if player == 1:
+                assert_board_equal(store, board, board_name=name)
+
+    delete_board(store, b1, board_name="board1")
+    delete_board(store, b3, board_name="board3")
+    delete_board(store, b2, board_name="board2")
+
+
 def test_gamma_board(store: StatementStoreType, **kwargs: Any) -> None:
     doc = "gamma_move + gamma_board"
     store(make_comment(doc))
@@ -232,6 +252,7 @@ scenarios: Dict[str, ScenarioType] = {
     "test_strip": test_strip,
     "test_golden_move": test_golden_move,
     "test_gamma_board": test_gamma_board,
+    "test_many_boards": test_many_boards,
 }
 
 __all__ = ["scenarios"]
