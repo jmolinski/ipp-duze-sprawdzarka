@@ -33,7 +33,7 @@ ASSERT: Dict[str, PyCVariants] = {
     "notequal": {"c": "assert( {} != {} );", "py": "assert {} != {}"},
     "isnull": {"c": "assert( {} == NULL );", "py": "assert {} is None"},
     "isnotnull": {"c": "assert( {} != NULL );", "py": "assert {} is not None"},
-    "stringequal": {"c": "assert( strcmp({}, \n{}) == 0);", "py": "assert {} == {}"},
+    "stringequal": {"c": "assert( strcmp({}, \n{}) == 0);", "py": "assert {} == ({})"},
 }
 
 EMPTY_LINE: PyCVariants = {"py": "\n", "c": "\n"}
@@ -153,7 +153,7 @@ def cycle_players(players: int, take: int) -> Iterable[int]:
 
 
 def get_field_neighbors(gamma: Gamma, x: int, y: int) -> Set[Coords]:
-    getter = make_neighbor_getter(gamma.board.board)
+    getter = make_neighbor_getter(gamma.board.width, gamma.board.height)
     return set(getter(x, y))
 
 

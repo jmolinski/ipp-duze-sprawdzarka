@@ -39,7 +39,7 @@ class Gamma:
         if self._is_in_valid_state():
             return True
 
-        self.board.board[row][column] = Board.FREE_FIELD
+        del self.board.board[row][column]
         return False
 
     def try_golden_move(self, player: int, column: int, row: int) -> bool:
@@ -71,7 +71,7 @@ class Gamma:
         if len(player_areas) < self.max_areas:
             return len(list(free_coords))
 
-        neighbor_getter = make_neighbor_getter(self.board.board)
+        neighbor_getter = make_neighbor_getter(self.board.width, self.board.height)
 
         return sum(
             self._can_move_to_empty_field(player_areas, list(neighbor_getter(*coord)))
@@ -91,7 +91,9 @@ class Gamma:
     def get_busy_fields(self, player: int) -> int:
         if player == 0:
             return 0
-        return sum(row.count(player) for row in self.board.board)
+        return sum(
+            list(row.values()).count(player) for row in self.board.board.values()
+        )
 
     def is_golden_possible(self, player: int) -> bool:
         if player in self._golden_move_done:

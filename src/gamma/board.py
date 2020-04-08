@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, Mapping, MutableMapping, cast
 
+from gamma.board_defaultdict import make_empty_board
 from gamma.group_areas import ListOfAreas, group_areas_by_player
 
 
 class Board:
-    board: List[List[int]]
+    board: Mapping[int, MutableMapping[int, int]]
 
     FREE_FIELD = -1
 
@@ -16,13 +17,29 @@ class Board:
 
         self.width = width
         self.height = height
-        self.board = [[-1] * width for _ in range(height)]
+
+        self.board = make_empty_board(width, height, self.FREE_FIELD)
 
     def print(self) -> str:
-        def row_to_string(row: List[int]) -> str:
-            return "".join(["." if c == -1 else str(c) for c in row]) + "\n"
+        def print_player(p: int) -> str:
+            return str(p) if p < 10 else f"[{p}]"
 
-        return "".join(reversed(list(row_to_string(row) for row in self.board)))
+        def row_to_string(row: Dict[int, int]) -> str:
+            r = ""
+            for i in range(self.width):
+                player = row.get(i, -1)
+                if player == -1:
+                    r += "."
+                else:
+                    r += print_player(player)
+
+            return r + "\n"
+
+        rows = [
+            row_to_string(cast(Dict[int, int], self.board[i]))
+            for i in range(self.height)
+        ]
+        return "".join(reversed(rows))
 
     def get_grouped_areas(self) -> Dict[int, ListOfAreas]:
-        return group_areas_by_player(self.board)
+        return group_areas_by_player(self.board, self.width, self.height)
