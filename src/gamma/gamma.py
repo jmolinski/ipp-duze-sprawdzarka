@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import itertools
-
-from typing import List, Set
+from typing import List, Set, Tuple, Iterator
 
 from gamma.board import Board
 from gamma.group_areas import Coords, make_neighbor_getter
@@ -42,6 +41,10 @@ class Gamma:
         self.board.board[row][column] = Board.FREE_FIELD
         return False
 
+    def dangerously_do_move(self, player: int, column: int, row: int) -> bool:
+        self.board.board[row][column] = player
+        return True
+
     def try_golden_move(self, player: int, column: int, row: int) -> bool:
         if player == 0:
             return False
@@ -62,20 +65,26 @@ class Gamma:
         return moved
 
     def get_free_fields(self, player: int) -> int:
+        return len(list(self.get_free_fields_coords(player)))
+
+    # kolejnosć y x
+    def get_free_fields_coords(self, player: int) -> Iterator[Tuple[int, int]]:
         if player == 0:
-            return 0
+            return iter([])
         grouped_areas = self.board.get_grouped_areas()
         free_coords = flatten(grouped_areas.get(Board.FREE_FIELD, []))
-
         player_areas = grouped_areas.get(player, [])
         if len(player_areas) < self.max_areas:
-            return len(list(free_coords))
+            return flatten(self.board.get_grouped_areas()[Board.FREE_FIELD])
 
         neighbor_getter = make_neighbor_getter(self.board.board)
 
-        return sum(
-            self._can_move_to_empty_field(player_areas, list(neighbor_getter(*coord)))
+        return (
+            coord
             for coord in free_coords
+            if self._can_move_to_empty_field(
+                player_areas, list(neighbor_getter(*coord))
+            )
         )
 
     @staticmethod
