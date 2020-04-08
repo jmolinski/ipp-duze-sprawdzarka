@@ -170,7 +170,7 @@ def get_edge_coords(gamma: Gamma) -> List[Coords]:
 
 
 def get_coords_around(gamma: Gamma, x: int, y: int, r: int = 1) -> List[Coords]:
-    """returns inclusive list! with (x, y)
+    """returns exclusive list without (x, y)
     f(r) = PI(r-1)(r-1)
     len(returned_list) ~ f(r) [not strictly true xD]
     for 0 < r =< 3: f(r+1) is almost exactly len(returned_list)
@@ -185,7 +185,7 @@ def get_coords_around(gamma: Gamma, x: int, y: int, r: int = 1) -> List[Coords]:
             new_coords |= get_field_neighbors(gamma, x, y)
         coords = new_coords
 
-    return list(coords)
+    return list(coords - {(x, y)})
 
 
 def make_random_id() -> str:
@@ -196,14 +196,16 @@ def flatten(s: Iterable[Iterable[T]]) -> Iterable[T]:
     return itertools.chain.from_iterable(s)
 
 
-def assert_board_equal(store: StatementStoreType, board: Gamma) -> None:
+def assert_board_equal(
+    store: StatementStoreType, board: Gamma, board_name: str = "board"
+) -> None:
     store(EMPTY_LINE)
     var_name = "board" + str(make_random_id())
     statements, rendered = assign_call(
-        gamma_board, board, c_type="char*", var_name=var_name
+        gamma_board, board, c_type="char*", var_name=var_name, board_name=board_name
     )
     store(statements)
     store(make_assert(var_name, assert_type="isnotnull"))
-    comp_str = '\n'.join(f'"{row}\\n"' for row in rendered.splitlines() if row)
+    comp_str = "\n".join(f'"{row}\\n"' for row in rendered.splitlines() if row)
     store(make_assert(var_name, comp_str, assert_type="stringequal"))
     store(free_memory(var_name))
