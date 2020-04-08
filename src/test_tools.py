@@ -153,7 +153,7 @@ def cycle_players(players: int, take: int) -> Iterable[int]:
 
 
 def get_field_neighbors(gamma: Gamma, x: int, y: int) -> Set[Coords]:
-    getter = make_neighbor_getter(gamma.board.board)
+    getter = make_neighbor_getter(gamma.board.width, gamma.board.height)
     return set(getter(x, y))
 
 
