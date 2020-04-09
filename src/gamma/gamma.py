@@ -41,7 +41,7 @@ class Gamma:
         self.board.board[row][column] = Board.FREE_FIELD
         return False
 
-    def dangerously_do_move(self, player: int, column: int, row: int) -> bool:
+    def unsafe_move(self, player: int, column: int, row: int) -> bool:
         self.board.board[row][column] = player
         return True
 

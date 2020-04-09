@@ -23,7 +23,7 @@ from test_tools import (
     get_all_board_coords,
     make_board,
     make_comment,
-    dangerous_gamma_move_no_check,
+    unsafe_gamma_move,
 )
 
 FREE_FIELD = Board.FREE_FIELD
@@ -325,7 +325,7 @@ def test_golden_move_complexity(store: StatementStoreType, **kwargs: Any) -> Non
                 store(assert_call(gamma_move, board, p, x, y))
             else:
                 for y, x in board.get_free_fields_coords(p):
-                    store(assert_call(dangerous_gamma_move_no_check, board, p, x, y))
+                    store(assert_call(unsafe_gamma_move, board, p, x, y))
 
     board.max_areas = areas
     for i in range(round(tests)):
@@ -342,7 +342,8 @@ def test_golden_move_complexity(store: StatementStoreType, **kwargs: Any) -> Non
 def test_golden_move_complexity_single_square(
     store: StatementStoreType, **kwargs: Any
 ) -> None:
-    doc = "tests golden move complexity, player one has whole board while player 2 has only one square"
+    doc = "tests golden move complexity,"
+    "player one has whole board while player 2 has only one square"
     store(make_comment(doc))
 
     width, height = int(kwargs.get("width", 100)), int(kwargs.get("height", 100))
@@ -362,7 +363,7 @@ def test_golden_move_complexity_single_square(
     )
 
     for y, x in sorted(board.get_free_fields_coords(1)):
-        store(assert_call(dangerous_gamma_move_no_check, board, 1, x, y))
+        store(assert_call(unsafe_gamma_move, board, 1, x, y))
 
     for i in range(tests):
         if not gamma_golden_possible(board, 2):
