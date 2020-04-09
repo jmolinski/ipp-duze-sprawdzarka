@@ -45,7 +45,7 @@ def call(
     ret_val = f(*args) if board is None else f(board, *args)
     rendered_args = ", ".join(str(a) for a in args)
     board_arg = "" if not board else f"{board_name}{', ' if rendered_args else ''}"
-    f_name = f.__name__ if f.__name__ != 'unsafe_gamma_move' else 'gamma_move'
+    f_name = f.__name__ if f.__name__ != "unsafe_gamma_move" else "gamma_move"
     return (
         f"{f_name}({board_arg}{rendered_args})",
         ret_val,
@@ -212,12 +212,5 @@ def assert_board_equal(
     store(free_memory(var_name))
 
 
-def unsafe_gamma_move(
-    g: Gamma,
-    player: int,
-    x: int,
-    y: int,
-    handler: Callable[[Gamma, int, int, int], bool] = Gamma.unsafe_move,
-) -> bool:
-
-    return handler(g, player, x, y)
+def unsafe_gamma_move(g: Gamma, player: int, x: int, y: int) -> bool:
+    return g.unsafe_move(player, x, y)

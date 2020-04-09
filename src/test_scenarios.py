@@ -1,5 +1,6 @@
 import itertools as it
 import random
+
 from typing import Any, Dict, List
 
 from gamma.board import Board
@@ -21,6 +22,7 @@ from test_tools import (
     delete_board,
     flatten,
     get_all_board_coords,
+    get_coords_around,
     make_board,
     make_comment,
     unsafe_gamma_move,
@@ -342,8 +344,10 @@ def test_golden_move_complexity(store: StatementStoreType, **kwargs: Any) -> Non
 def test_golden_move_complexity_single_square(
     store: StatementStoreType, **kwargs: Any
 ) -> None:
-    doc = "tests golden move complexity,"
-    "player one has whole board while player 2 has only one square"
+    doc = (
+        "tests golden move complexity,"
+        "player one has whole board while player 2 has only one square"
+    )
     store(make_comment(doc))
 
     width, height = int(kwargs.get("width", 100)), int(kwargs.get("height", 100))
@@ -362,7 +366,7 @@ def test_golden_move_complexity_single_square(
         )
     )
 
-    for y, x in sorted(board.get_free_fields_coords(1)):
+    for y, x in sorted(board.get_free_fields_coords(player=1)):
         store(assert_call(unsafe_gamma_move, board, 1, x, y))
 
     for i in range(tests):
@@ -370,6 +374,46 @@ def test_golden_move_complexity_single_square(
             break
         x, y = random.randint(0, width - 1), random.randint(0, height - 1)
         store(assert_call(gamma_golden_move, board, 2, x, y))
+
+    delete_board(store, board)
+
+
+def test_golden_move_complexity_many_splits(
+    store: StatementStoreType, **kwargs: Any
+) -> None:
+    doc = (
+        "gamma_golden_move complexity, "
+        "attempts invalid golden moves (too many areas)"
+    )
+    store(make_comment(doc))
+
+    width, height = int(kwargs.get("width", 100)), int(kwargs.get("height", 100))
+    players = int(kwargs.get("players", 100))
+    board = make_board(store, width, height, players, 3)
+    all_fields = get_all_board_coords(board)
+    random_centers = random.sample(all_fields, k=players)
+
+    player_center_area = {
+        p: (f, get_coords_around(board, *f))
+        for (p, f) in zip(range(1, players + 1), random_centers)
+    }
+
+    for player, (center, neighbors) in player_center_area.items():
+        x, y = center
+        if board.board.board[y][x] == FREE_FIELD:
+            store(assert_call(unsafe_gamma_move, board, player, *center))
+            for (x, y) in neighbors:
+                if board.board.board[y][x] == FREE_FIELD:
+                    store(assert_call(unsafe_gamma_move, board, player, x, y))
+
+    if bool(kwargs.get("always_fail", True)):
+        for player in range(1, players + 1):
+            x, y = random.randint(0, width - 1), random.randint(0, height - 1)
+            store(assert_call(gamma_move, board, player, x, y))
+
+    for player in range(1, players + 1):
+        field = random.choice(random_centers)
+        store(assert_call(gamma_golden_move, board, player, *field))
 
     delete_board(store, board)
 
@@ -388,6 +432,7 @@ scenarios: Dict[str, ScenarioType] = {
     "test_random_actions": test_random_actions,
     "test_golden_move_complexity": test_golden_move_complexity,
     "test_golden_move_complexity_single_square": test_golden_move_complexity_single_square,
+    "test_golden_move_complexity_many_splits": test_golden_move_complexity_many_splits,
 }
 
 __all__ = ["scenarios"]
