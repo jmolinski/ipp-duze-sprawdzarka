@@ -1,6 +1,5 @@
 import itertools as it
 import random
-
 from typing import Any, Dict, List
 
 from gamma.board import Board
@@ -24,6 +23,7 @@ from test_tools import (
     get_all_board_coords,
     make_board,
     make_comment,
+    unsafe_gamma_move,
 )
 
 FREE_FIELD = Board.FREE_FIELD
@@ -303,6 +303,77 @@ def test_random_actions(store: StatementStoreType, **kwargs: Any) -> None:
     delete_board(store, board)
 
 
+def test_golden_move_complexity(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "tests golden move complexity"
+    store(make_comment(doc))
+
+    width, height = int(kwargs.get("width", 100)), int(kwargs.get("height", 100))
+    players, areas = int(kwargs.get("players", 2)), int(kwargs.get("areas", 2))
+    tests = int(kwargs.get("players", (height * width) ** 0.5))
+    board = make_board(store, width, height, players, areas)
+    board.max_areas = 1
+
+    def can_move(p: int) -> bool:
+        return bool(gamma_free_fields(board, p) or gamma_golden_possible(board, p))
+
+    for _ in range(25):
+        if not any(can_move(p) for p in range(1, players + 1)):
+            break
+        for p in range(1, players + 1):
+            if board.get_busy_fields(p) == 0:
+                x, y = random.randint(0, width - 1), random.randint(0, height - 1)
+                store(assert_call(gamma_move, board, p, x, y))
+            else:
+                for y, x in board.get_free_fields_coords(p):
+                    store(assert_call(unsafe_gamma_move, board, p, x, y))
+
+    board.max_areas = areas
+    for i in range(round(tests)):
+        if not any(gamma_golden_possible(board, p) for p in range(1, players + 1)):
+            break
+
+        for p in range(1, players + 1):
+            x, y = random.randint(0, width - 1), random.randint(0, height - 1)
+            store(assert_call(gamma_golden_move, board, p, x, y))
+
+    delete_board(store, board)
+
+
+def test_golden_move_complexity_single_square(
+    store: StatementStoreType, **kwargs: Any
+) -> None:
+    doc = "tests golden move complexity,"
+    "player one has whole board while player 2 has only one square"
+    store(make_comment(doc))
+
+    width, height = int(kwargs.get("width", 100)), int(kwargs.get("height", 100))
+    players, areas = 2, 1
+    tests = int(kwargs.get("players", (height * width) ** 0.5))
+
+    board = make_board(store, width, height, players, areas)
+
+    store(
+        assert_call(
+            gamma_move,
+            board,
+            2,
+            random.randint(0, width - 1),
+            random.randint(0, height - 1),
+        )
+    )
+
+    for y, x in sorted(board.get_free_fields_coords(1)):
+        store(assert_call(unsafe_gamma_move, board, 1, x, y))
+
+    for i in range(tests):
+        if not gamma_golden_possible(board, 2):
+            break
+        x, y = random.randint(0, width - 1), random.randint(0, height - 1)
+        store(assert_call(gamma_golden_move, board, 2, x, y))
+
+    delete_board(store, board)
+
+
 scenarios: Dict[str, ScenarioType] = {
     "fill_board_with_collisions": fill_board_with_collisions,
     "fill_board_without_collisions": fill_board_without_collisions,
@@ -315,6 +386,8 @@ scenarios: Dict[str, ScenarioType] = {
     "test_gamma_board": test_gamma_board,
     "test_many_boards": test_many_boards,
     "test_random_actions": test_random_actions,
+    "test_golden_move_complexity": test_golden_move_complexity,
+    "test_golden_move_complexity_single_square": test_golden_move_complexity_single_square,
 }
 
 __all__ = ["scenarios"]
