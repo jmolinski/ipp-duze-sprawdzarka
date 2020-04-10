@@ -175,7 +175,7 @@ def test_golden_move(store: StatementStoreType, **kwargs: Any) -> None:
     player_fields: Dict[int, List[Coords]] = {}
     # each player picks 10 random fields
     for field, player in zip(
-            fields_to_fill, cycle_players(players=players_n, take=1000)
+        fields_to_fill, cycle_players(players=players_n, take=1000)
     ):
         store(assert_call(gamma_move, board, player, *field))
         player_fields[player] = player_fields.get(player, []) + [field]
@@ -348,7 +348,7 @@ def test_golden_move_complexity(store: StatementStoreType, **kwargs: Any) -> Non
 
 
 def test_golden_move_complexity_single_square(
-        store: StatementStoreType, **kwargs: Any
+    store: StatementStoreType, **kwargs: Any
 ) -> None:
     doc = (
         "tests golden move complexity,"
@@ -385,7 +385,7 @@ def test_golden_move_complexity_single_square(
 
 
 def test_golden_move_complexity_many_splits(
-        store: StatementStoreType, **kwargs: Any
+    store: StatementStoreType, **kwargs: Any
 ) -> None:
     doc = (
         "gamma_golden_move complexity, "
