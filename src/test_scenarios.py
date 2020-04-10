@@ -1,6 +1,5 @@
 import itertools as it
 import random
-
 from typing import Any, Dict, List
 
 from gamma.board import Board
@@ -235,11 +234,18 @@ def test_gamma_board(store: StatementStoreType, **kwargs: Any) -> None:
     doc = "gamma_move + gamma_board"
     store(make_comment(doc))
 
-    board = make_board(store, 7, 7, 5, 9)
+    height, width = int(kwargs.get("height", 7)), int(kwargs.get("width", 7))
+    moves = int(kwargs.get("moves", height * width))
+    chunk_size = int(kwargs.get("chunk_size", 1))
+    players, areas = int(kwargs.get("players", 5)), int(kwargs.get("areas", 9))
+    board = make_board(store, height, width, players, areas)
 
-    for player in cycle_players(players=5, take=7 * 7):
-        x, y = random.randint(0, 7), random.randint(0, 7)
-        store(assert_call(gamma_move, board, player, x, y))
+    player_iterator = cycle_players(players=players, take=moves)
+
+    for _ in range(round(moves / chunk_size)):
+        for player in it.islice(player_iterator, chunk_size):
+            x, y = random.randint(0, height - 1), random.randint(0, width - 1)
+            store(assert_call(gamma_move, board, player, x, y))
         assert_board_equal(store, board)
 
     delete_board(store, board)
