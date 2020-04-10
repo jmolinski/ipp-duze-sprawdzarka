@@ -395,7 +395,7 @@ def test_golden_move_complexity_many_splits(
 
     width, height = int(kwargs.get("width", 100)), int(kwargs.get("height", 100))
     players = int(kwargs.get("players", 100))
-    board = make_board(store, width, height, players, 3)
+    board = make_board(store, height, width, players, 3)
     all_fields = get_all_board_coords(board)
     random_centers = random.sample(all_fields, k=players)
 
@@ -424,6 +424,59 @@ def test_golden_move_complexity_many_splits(
     delete_board(store, board)
 
 
+def test_free_fields_complexity(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "gamma_free_fields complexity"
+    store(make_comment(doc))
+
+    width, height = int(kwargs.get("width", 100)), int(kwargs.get("height", 100))
+    players = int(kwargs.get("players", 100))
+    areas = round(players ** (1 / 2))
+
+    board = make_board(store, height, width, players, areas)
+    all_fields = get_all_board_coords(board)
+    random.shuffle(all_fields)
+
+    for p in range(1, players + 1):
+        for _ in range(areas - 1):
+            store(assert_call(unsafe_gamma_move, board, p, *all_fields.pop()))
+
+    for p in range(1, players + 1):
+        for _ in range(2):
+            store(assert_call(gamma_free_fields, board, p))
+
+    for p in range(1, players + 1):
+        store(assert_call(unsafe_gamma_move, board, p, *all_fields.pop()))
+
+    for _ in range(3):
+        for p in range(1, players + 1):
+            store(assert_call(gamma_free_fields, board, p))
+
+    delete_board(store, board)
+
+
+def test_busy_fields_complexity(store: StatementStoreType, **kwargs: Any) -> None:
+    doc = "gamma_busy_fields complexity"
+    store(make_comment(doc))
+
+    width, height = int(kwargs.get("width", 100)), int(kwargs.get("height", 100))
+    players = int(kwargs.get("players", 100))
+    areas = round(players ** (1 / 2))
+
+    board = make_board(store, height, width, players, areas)
+
+    all_fields = get_all_board_coords(board)
+    random.shuffle(all_fields)
+    for p in range(1, players + 1):
+        for _ in range(areas):
+            store(assert_call(unsafe_gamma_move, board, p, *all_fields.pop()))
+
+    for _ in range(4):
+        for p in range(1, players + 1):
+            store(assert_call(gamma_free_fields, board, p))
+
+    delete_board(store, board)
+
+
 scenarios: Dict[str, ScenarioType] = {
     "fill_board_with_collisions": fill_board_with_collisions,
     "fill_board_without_collisions": fill_board_without_collisions,
@@ -439,6 +492,8 @@ scenarios: Dict[str, ScenarioType] = {
     "test_golden_move_complexity": test_golden_move_complexity,
     "test_golden_move_complexity_single_square": test_golden_move_complexity_single_square,
     "test_golden_move_complexity_many_splits": test_golden_move_complexity_many_splits,
+    "test_free_fields_complexity": test_free_fields_complexity,
+    "test_busy_fields_complexity": test_busy_fields_complexity,
 }
 
 __all__ = ["scenarios"]
