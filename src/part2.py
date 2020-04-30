@@ -10,6 +10,8 @@ board: Optional[part1.Gamma] = None
 
 COMMAND_ARGS = {"B": 4, "I": 4, "m": 3, "g": 3, "b": 1, "f": 1, "q": 1, "p": 0}
 
+"""usage: cat test.in | python part2.py 1>output.out 2>output.err"""
+
 
 def parse_unsigned_ints(string: str, expected: int) -> Optional[List[int]]:
     for c in string:
