@@ -76,6 +76,7 @@ def main() -> None:
         with open(path_to_test) as f:
             test = f.read().replace("assert ", "")
 
+        STATEMENTS.clear()
         exec(test)
 
         print(*STATEMENTS, sep="\n")
