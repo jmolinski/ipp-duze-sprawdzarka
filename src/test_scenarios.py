@@ -1,5 +1,6 @@
 import itertools as it
 import random
+
 from typing import Any, Dict, List
 
 from gamma.board import Board
