@@ -23,7 +23,7 @@ def parse_unsigned_ints(string: str, expected: int) -> Optional[List[int]]:
     except ValueError:
         return None
 
-    if len(elements) != expected or any(k > MAX_UINT32 or k < 0 for k in elements):
+    if len(elements) != expected or any(k > MAX_UINT32 for k in elements):
         return None
 
     return elements
