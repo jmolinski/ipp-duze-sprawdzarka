@@ -6,11 +6,11 @@ import part1
 
 MAX_UINT32 = 2 ** 32 - 1
 
-board: Optional[part1.Gamma] = None
-
 COMMAND_ARGS = {"B": 4, "I": 4, "m": 3, "g": 3, "b": 1, "f": 1, "q": 1, "p": 0}
 
 """usage: cat test.in | python part2.py 1>output.out 2>output.err"""
+
+board: Optional[part1.Gamma] = None
 
 
 def parse_unsigned_ints(string: str, expected: int) -> Optional[List[int]]:
@@ -51,7 +51,7 @@ def run_batch_mode_command(command: str, raw_args: str, line: int) -> None:
         print(part1.gamma_busy_fields(board, *args))
     if command == "q":
         print(int(part1.gamma_golden_possible(board, *args)))
-    if command == "m":
+    if command == "p":
         print(part1.gamma_board(board), end="")
 
 
