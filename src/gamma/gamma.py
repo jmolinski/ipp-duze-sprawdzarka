@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import itertools
-from typing import List, Set, Tuple, Iterator
+
+from typing import Iterator, List, Set, Tuple
 
 from gamma.board import Board
 from gamma.group_areas import Coords, make_neighbor_getter

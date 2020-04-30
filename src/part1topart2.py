@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, List
 import sys
+
+from typing import Any, List
 
 """
 Testy w stylu part1 moga zostac skonwertowane tym skryptem na wersje
