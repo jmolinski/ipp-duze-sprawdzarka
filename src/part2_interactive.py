@@ -279,12 +279,18 @@ DefaultCompiler = Compiler
 
 
 class Interpreter:
+    no_wait: bool
+
+    def __init__(self, no_wait: bool = False) -> None:
+        self.no_wait = no_wait
+
     def _run_instruction(self, instruction: CompiledInstruction) -> None:
         if instruction.op == InstructionType.VERBATIM:
             sys.stdout.buffer.write(instruction.text)
             sys.stdout.flush()
         if instruction.op == InstructionType.WAIT:
-            time.sleep(instruction.wait_time)
+            if not self.no_wait:
+                time.sleep(instruction.wait_time)
 
     def run(self, instructions: Iterable[CompiledInstruction]) -> None:
         for instruction in instructions:
@@ -307,7 +313,9 @@ def main() -> None:
         print(*Compiler(debug=debug).compile(raw_input), sep="\n", flush=True)
         exit(0)
 
-    Interpreter().run(Compiler(debug=debug).compile(raw_input))
+    no_wait = len(sys.argv) > 1 and any("nowait" in p.lower() for p in sys.argv[1:])
+
+    Interpreter(no_wait=no_wait).run(Compiler(debug=debug).compile(raw_input))
 
 
 if __name__ == "__main__":
