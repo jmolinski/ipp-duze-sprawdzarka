@@ -129,9 +129,10 @@ class Compiler:
         """Ta funkcja przyjmuje jako argumenty wartosci z komendy START,
         czyli te same argumenty ktore przyjmuje gamma_new.
         Musi zwrocic pare liczb calkowitych x, y.
-        (x, y) to koordynaty kursora gdy rozpoczyna sie interactive mode.
+        (x, y) to koordynaty kursora [pola na planszy, nie znaku w buforze
+        terminala! gdy rozpoczyna sie interactive mode].
         x to kolumna pola na ktore wskazuje kursor, a y to wiersz.
-        Jezeli na poczatku kursor wskazuje na lewy-dolny rog to zwracasz
+        Jezeli na poczatku kursor wskazuje na left-bottom rog to zwracasz
         0, 0; jezeli wskazuje na left-top to zwracasz (0, height - 1) itp.
         Jezeli wskazuje gdzies na srodek - musisz wyliczyc na podstawie
         argumentow pozycje tego pola.

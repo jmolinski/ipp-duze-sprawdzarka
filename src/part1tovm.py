@@ -70,7 +70,7 @@ class PlayerPointer:
 
         return False
 
-    def jump_to(self, player: int) -> Optional[int]:
+    def count_skips_to_player(self, player: int) -> Optional[int]:
         """Zwraca ile razy trzeba zrobic SKIPTURN zeby dojsc do tego gracza"""
         assert self.game is not None
         simulation = PlayerPointer(self.current, self.game)
@@ -89,6 +89,14 @@ class PlayerPointer:
 
 CURRENT_PLAYER = PlayerPointer()
 STATEMENTS: List[str] = []
+DEFAULT_WAIT_TIME = 0.25
+
+
+def skip_turns(to_skip: int) -> None:
+    STATEMENTS.append("SETWAIT 0")
+    for _ in range(to_skip):
+        STATEMENTS.append(f"SKIPTURN")
+    STATEMENTS.append(f"SETWAIT {DEFAULT_WAIT_TIME}")
 
 
 def gamma_new(
@@ -107,10 +115,9 @@ def gamma_move(g: part1.Gamma, player: int, x: int, y: int, *args: Any) -> bool:
     ret = original_gamma_move(g, player, x, y)
     STATEMENTS.append(f"GOTO {x} {y}")
 
-    skips_needed = CURRENT_PLAYER.jump_to(player)
+    skips_needed = CURRENT_PLAYER.count_skips_to_player(player)
     if skips_needed is not None:
-        for _ in range(skips_needed):
-            STATEMENTS.append(f"SKIPTURN")
+        skip_turns(skips_needed)
 
     STATEMENTS.append(f"MOVE")
     if ret:
@@ -123,10 +130,9 @@ def gamma_golden_move(g: part1.Gamma, player: int, x: int, y: int) -> bool:
     ret = original_gamma_golden_move(g, player, x, y)
     STATEMENTS.append(f"GOTO {x} {y}")
 
-    skips_needed = CURRENT_PLAYER.jump_to(player)
+    skips_needed = CURRENT_PLAYER.count_skips_to_player(player)
     if skips_needed is not None:
-        for _ in range(skips_needed):
-            STATEMENTS.append(f"SKIPTURN")
+        skip_turns(skips_needed)
 
     # todo jak z tym skipowaniem? golden_possible jest uszkodzone
     # wiec python zrobi ruch a interctive pominie
