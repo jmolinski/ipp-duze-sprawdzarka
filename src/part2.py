@@ -1,0 +1,98 @@
+import sys
+
+from typing import List, Optional
+
+import part1
+
+MAX_UINT32 = 2 ** 32 - 1
+
+COMMAND_ARGS = {"B": 4, "I": 4, "m": 3, "g": 3, "b": 1, "f": 1, "q": 1, "p": 0}
+
+"""usage: cat test.in | python part2.py 1>output.out 2>output.err"""
+
+board: Optional[part1.Gamma] = None
+
+
+def parse_unsigned_ints(string: str, expected: int) -> Optional[List[int]]:
+    for c in string:
+        if not c.isspace() and not c.isdigit():
+            return None
+
+    try:
+        elements = [int(stripped) for k in string.split() if (stripped := k.strip())]
+    except ValueError:
+        return None
+
+    if len(elements) != expected or any(k > MAX_UINT32 for k in elements):
+        return None
+
+    return elements
+
+
+def run_batch_mode_command(command: str, raw_args: str, line: int) -> None:
+    if command not in "mgfbqp":
+        print(f"ERROR {line}", file=sys.stderr)
+        return
+
+    args = parse_unsigned_ints(raw_args, expected=COMMAND_ARGS[command])
+    if args is None:
+        print(f"ERROR {line}", file=sys.stderr)
+        return
+
+    assert board is not None
+    if command == "m":
+        # manual unpack to not fuck up mypy with default arg handler
+        print(int(part1.gamma_move(board, args[0], args[1], args[2])))
+    if command == "g":
+        print(int(part1.gamma_golden_move(board, *args)))
+    if command == "f":
+        print(part1.gamma_free_fields(board, *args))
+    if command == "b":
+        print(part1.gamma_busy_fields(board, *args))
+    if command == "q":
+        print(int(part1.gamma_golden_possible(board, *args)))
+    if command == "p":
+        print(part1.gamma_board(board), end="")
+
+
+def run_start_game_command(command: str, raw_args: str, line: int) -> None:
+    global board
+    if board is None and command == "I":
+        raise NotImplemented("interactive mode is not supported")
+    elif board is None and command == "B":
+        args = parse_unsigned_ints(raw_args, expected=COMMAND_ARGS[command])
+        if args is None:
+            print(f"ERROR {line}", file=sys.stderr)
+            return
+        board = part1.gamma_new(*args)
+        print(1 if board else 0)
+
+    if board is None:
+        print(f"ERROR {line}", file=sys.stderr)
+        return
+
+
+def run_command(statement: str, line: int) -> None:
+    global board
+    command, raw_args = statement[0], statement[1:]
+
+    if board is None:
+        run_start_game_command(command, raw_args, line)
+    else:
+        run_batch_mode_command(command, raw_args, line)
+
+
+def main() -> None:
+    statements = sys.stdin.read().splitlines(keepends=True)
+
+    for line, statement in enumerate(statements, start=1):
+        if statement[-1] != "\n":
+            print(f"ERROR {line}")
+        elif statement.strip() == "" or statement[0] == "#":
+            pass
+        else:
+            run_command(statement, line)
+
+
+if __name__ == "__main__":
+    main()
