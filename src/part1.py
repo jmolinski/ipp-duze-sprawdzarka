@@ -15,23 +15,22 @@ def gamma_delete(g: Gamma) -> None:
     del g  # fails if double-deallocation
 
 
-def gamma_move(
-    g: Gamma,
-    player: int,
-    x: int,
-    y: int,
-    handler: Callable[[Gamma, int, int, int], bool] = Gamma.try_move,
-) -> bool:
+def gamma_move(g: Gamma, player: int, x: int, y: int) -> bool:
     if x < 0 or y < 0 or g.board.width <= x or g.board.height <= y:
         return False
     if player < 1 or player > g.players:
         return False
 
-    return handler(g, player, x, y)
+    return Gamma.try_move(g, player, x, y)
 
 
 def gamma_golden_move(g: Gamma, player: int, x: int, y: int) -> bool:
-    return gamma_move(g, player, x, y, handler=Gamma.try_golden_move)
+    if x < 0 or y < 0 or g.board.width <= x or g.board.height <= y:
+        return False
+    if player < 1 or player > g.players:
+        return False
+
+    return Gamma.try_golden_move(g, player, x, y)
 
 
 def gamma_busy_fields(g: Gamma, player: int) -> int:

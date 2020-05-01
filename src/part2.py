@@ -88,7 +88,7 @@ def main() -> None:
     for line, statement in enumerate(statements, start=1):
         if statement[-1] != "\n":
             print(f"ERROR {line}")
-        elif statement.strip() == "" or statement[0] == "#":
+        elif statement == "\n" or statement[0] == "#":
             pass
         else:
             run_command(statement, line)
