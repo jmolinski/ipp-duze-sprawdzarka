@@ -65,7 +65,7 @@ def run_start_game_command(command: str, raw_args: str, line: int) -> None:
             print(f"ERROR {line}", file=sys.stderr)
             return
         board = part1.gamma_new(*args)
-        print(1 if board else 0)
+        print("OK", line)
 
     if board is None:
         print(f"ERROR {line}", file=sys.stderr)

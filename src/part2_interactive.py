@@ -304,16 +304,11 @@ class Interpreter:
         )
 
 
-def main() -> None:
+def main(debug: bool, no_wait: bool, compile_only: bool) -> None:
     raw_input = sys.stdin.read()
-
-    debug = len(sys.argv) > 1 and any("debug" in p.lower() for p in sys.argv[1:])
-
-    if len(sys.argv) > 1 and any("compile" in p.lower() for p in sys.argv[1:]):
+    if compile_only:
         print(*Compiler(debug=debug).compile(raw_input), sep="\n", flush=True)
         exit(0)
-
-    no_wait = len(sys.argv) > 1 and any("nowait" in p.lower() for p in sys.argv[1:])
 
     Interpreter(no_wait=no_wait).run(Compiler(debug=debug).compile(raw_input))
 
@@ -323,4 +318,10 @@ if __name__ == "__main__":
         print(__doc__)
         exit(0)
 
-    main()
+    no_wait = len(sys.argv) > 1 and any("nowait" in p.lower() for p in sys.argv[1:])
+    debug = len(sys.argv) > 1 and any("debug" in p.lower() for p in sys.argv[1:])
+    compile_only = len(sys.argv) > 1 and any(
+        "compile" in p.lower() for p in sys.argv[1:]
+    )
+
+    main(debug, no_wait, compile_only)
