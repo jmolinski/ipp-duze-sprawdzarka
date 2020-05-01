@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-from typing import Any, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 
 import part1
 
@@ -96,6 +96,7 @@ def skip_turns(to_skip: int) -> None:
     STATEMENTS.append("SETWAIT 0")
     for _ in range(to_skip):
         STATEMENTS.append(f"SKIPTURN")
+        CURRENT_PLAYER.advance()
     STATEMENTS.append(f"SETWAIT {DEFAULT_WAIT_TIME}")
 
 
@@ -170,7 +171,7 @@ def main() -> None:
         STATEMENTS.clear()
         CURRENT_PLAYER.reset()
 
-        context = {}
+        context: Dict[str, Any] = {}
         exec(test, context, context)  # to zdefiniuje board w context
         # bez tego przypisania edytor i mypy
         # nie widzi nazwy board - bo jest tworzona dynamicznie w ctx
