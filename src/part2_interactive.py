@@ -1,5 +1,9 @@
 import enum
 import itertools
+import sys
+import termios
+import time
+import tty
 
 from dataclasses import dataclass
 from typing import Final, Iterable, List, Sequence, Tuple
@@ -28,6 +32,11 @@ READ
 END powoduje wyslanie sygnalu EOF (nie jest wymagany!)
 READ moze znajdowac sie tylko na koncu (inaczej UB)
 READ powoduje wczytywanie polecen z stdin (bez weryfikacji!)
+UP/DOWN/RIGHT/LEFT moga powodowac problemy z przenosnoscia
+(a raczej: moga byc trudne do zrozumienia) kiedy wykonywane
+sa na granicach planszy. Jezeli chcesz zeby twoj skrypt byl 
+przenosny bezpieczniej jest uzywac instrukcji GOTO, w 
+przeciwnym wypadku musisz uwazac zeby nie "uderzac w sciane".
 
 wiersze puste i rozpoczynajace sie od # sa ignorowane
 
@@ -41,8 +50,8 @@ Dzialanie interpretera jest customizowalne.
 Mozna latwo zmodyfikowac (i nalezy przynajmniej zweryfikowac czy 
 default jest poprawny czy nie - jest on poprawny dla mojej 
 implementacji [jakub molinski here]) 2 rzeczy:
-1. Na jakiej pozycji rozpoczyna sie gra - metoda get_starting_position
-2. Jak dzialaja ruchy strzalkami - metoda move_cursor
+1. Na jakiej pozycji rozpoczyna sie gra - metoda _get_starting_position
+2. Jak dzialaja ruchy strzalkami - metoda _move_cursor
 Maja one opisy jak dzialaja i co maja dokladnie robic zeby smigalo.
 Jezeli je modyfikujesz dobrze jest na koniec odpalic mypy, zeby sprawdzic,
 czy typy danych sie zgadzaja.
@@ -61,17 +70,17 @@ IMPLIED
 
 
 class Direction(enum.Enum):
-    UP = enum.auto()
-    DOWN = enum.auto()
-    RIGHT = enum.auto()
-    LEFT = enum.auto()
+    UP = "UP"
+    DOWN = "DOWN"
+    RIGHT = "RIGHT"
+    LEFT = "LEFT"
 
 
 class InstructionType(enum.Enum):
     WAIT = enum.auto()
     VERBATIM = enum.auto()
-    END = enum.auto()
     READ = enum.auto()
+    NOOP = enum.auto()
 
 
 @dataclass()
@@ -84,7 +93,7 @@ class CompiledInstruction:
 class Compiler:
     """
     Jezeli chcesz modyfikowac te klasa (wedlug instrukcji zmieniajac na
-    przyklad metody get_starting_position i move_cursor), najlepiej
+    przyklad metody _get_starting_position i _move_cursor), najlepiej
     zrobic klase ktora dziedziczy po Compiler i nadpisac globalna
     zmienna DefaultCompiler
 
@@ -104,15 +113,17 @@ class Compiler:
     wait_time: float
     initialized: bool = False
     default_wait_time: Final[float] = 0.01
+    debug: bool = False
 
-    def __init__(self) -> None:
+    def __init__(self, debug: bool = False) -> None:
         self.x, self.y = 0, 0
         self.wait_time = 0.01
         self.width = self.height = self.players = self.areas = 0
         self.initialized = False
+        self.debug = debug
 
     @staticmethod
-    def get_starting_position(
+    def _get_starting_position(
         width: int, height: int, players: int, areas: int
     ) -> Tuple[int, int]:
         """Ta funkcja przyjmuje jako argumenty wartosci z komendy START,
@@ -127,7 +138,7 @@ class Compiler:
         """
         return 0, 0
 
-    def move_cursor(self, direction: Direction) -> None:
+    def _move_cursor(self, direction: Direction) -> None:
         """Ta funkcja przesuwa kursor na inne pole, zgodnie z kierunkiem
         oznaczajacym ktora strzalka ma zostac zasymulowana. Domyslna
         implementacja odpowiada implementacji ze 'sztywnymi scianami',
@@ -144,20 +155,20 @@ class Compiler:
         """
         if direction == Direction.UP:
             if self.y < self.height - 1:
-                self.y -= 1
+                self.y += 1
         elif direction == Direction.DOWN:
             if self.y > 0:
-                self.y += 1
+                self.y -= 1
         elif direction == Direction.RIGHT:
             if self.x < self.width - 1:
                 self.x += 1
-        else:  # Direction.LEFT
+        elif direction == Direction.LEFT:
             if self.x > 0:
                 self.x -= 1
 
-    def compile_start_instruction(self, args: Sequence[str]) -> CompiledInstruction:
+    def _compile_start_instruction(self, args: Sequence[str]) -> CompiledInstruction:
         self.width, self.height, self.players, self.areas = map(int, args)
-        self.x, self.y = self.get_starting_position(
+        self.x, self.y = self._get_starting_position(
             self.width, self.height, self.players, self.areas
         )
         self.initialized = True
@@ -166,7 +177,51 @@ class Compiler:
             op=InstructionType.VERBATIM, text=f"I {' '.join(args)}\n".encode("ASCII"),
         )
 
-    def compile_statement(
+    def _compile_goto(self, column: int, row: int) -> List[CompiledInstruction]:
+        if column >= self.width or row >= self.height:
+            raise ValueError(f"GOTO outside board: {column} {row}")
+
+        instructions: List[CompiledInstruction] = []
+
+        while self.x < column:
+            instructions.append(self._compile_arrow_move(Direction.RIGHT))
+        while self.x > column:
+            instructions.append(self._compile_arrow_move(Direction.LEFT))
+        while self.y < row:
+            instructions.append(self._compile_arrow_move(Direction.UP))
+        while self.y > row:
+            instructions.append(self._compile_arrow_move(Direction.DOWN))
+
+        if not instructions:  # already there
+            return [CompiledInstruction(op=InstructionType.NOOP)]
+        return instructions
+
+    def _compile_arrow_move(self, direction: Direction) -> CompiledInstruction:
+        code = {
+            Direction.UP: 65,
+            Direction.DOWN: 66,
+            Direction.RIGHT: 67,
+            Direction.LEFT: 68,
+        }
+
+        if self.debug:
+            print(direction)
+            print(self.x, self.y)
+
+        self._move_cursor(direction)
+
+        if self.debug:
+            print(self.x, self.y)
+
+        return CompiledInstruction(
+            op=InstructionType.VERBATIM, text=bytes([27, 91, code[direction]])
+        )
+
+    def _compile_user_move(self, statement: str) -> CompiledInstruction:
+        code = {"MOVE": b" ", "GOLDEN": b"G", "SKIPTURN": b"C"}
+        return CompiledInstruction(op=InstructionType.VERBATIM, text=code[statement])
+
+    def _compile_statement(
         self, statement: str, *args: str
     ) -> List[CompiledInstruction]:
         compiled: List[CompiledInstruction] = []
@@ -174,12 +229,31 @@ class Compiler:
         if statement == "START":
             if self.initialized:
                 raise ValueError("Duplicate START instruction")
-            compiled.append(self.compile_start_instruction(args))
+            compiled.append(self._compile_start_instruction(args))
         if not self.initialized:
             raise ValueError("Code must start with a START instruction")
 
         if statement == "END":
-            raise StopIteration()
+            return []
+        if statement == "SETWAIT":
+            self.wait_time = float(args[0])
+            return [CompiledInstruction(op=InstructionType.NOOP)]
+        if statement == "READ":
+            return [CompiledInstruction(op=InstructionType.READ)]
+        if statement in {"MOVE", "GOLDEN", "SKIPTURN"}:
+            compiled.append(self._compile_user_move(statement))
+        if statement == "GOTO":
+            compiled.extend(self._compile_goto(int(args[0]), int(args[1])))
+        if statement in {"UP", "DOWN", "LEFT", "RIGHT"}:
+            compiled.append(self._compile_arrow_move(Direction(statement)))
+
+        if not compiled:
+            raise ValueError(f"Invalid instruction: {statement}")
+
+        if self.wait_time:
+            compiled.append(
+                CompiledInstruction(op=InstructionType.WAIT, wait_time=self.wait_time)
+            )
 
         return compiled
 
@@ -193,17 +267,51 @@ class Compiler:
             if (stripped := line.strip()) and stripped[0] != "#"
         )
 
-        return itertools.chain.from_iterable(
-            self.compile_statement(*s) for s in statements
+        compiled_statements = itertools.chain.from_iterable(
+            itertools.takewhile(bool, (self._compile_statement(*s) for s in statements))
         )
+
+        return filter(lambda c: c.op != InstructionType.NOOP, compiled_statements)
 
 
 DefaultCompiler = Compiler
 
 
+class Interpreter:
+    def _run_instruction(self, instruction: CompiledInstruction) -> None:
+        if instruction.op == InstructionType.VERBATIM:
+            sys.stdout.buffer.write(instruction.text)
+            sys.stdout.flush()
+        if instruction.op == InstructionType.WAIT:
+            time.sleep(instruction.wait_time)
+
+    def run(self, instructions: Iterable[CompiledInstruction]) -> None:
+        for instruction in instructions:
+            self._run_instruction(instruction)
+
+        end_of_transmission = 4
+        self._run_instruction(
+            CompiledInstruction(
+                op=InstructionType.VERBATIM, text=bytes([end_of_transmission])
+            )
+        )
+
+
 def main() -> None:
-    pass
+    raw_input = sys.stdin.read()
+
+    debug = len(sys.argv) > 1 and any("debug" in p.lower() for p in sys.argv[1:])
+
+    if len(sys.argv) > 1 and any("compile" in p.lower() for p in sys.argv[1:]):
+        print(*Compiler(debug=debug).compile(raw_input), sep="\n", flush=True)
+        exit(0)
+
+    Interpreter().run(Compiler(debug=debug).compile(raw_input))
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and any("help" in p.lower() for p in sys.argv[1:]):
+        print(__doc__)
+        exit(0)
+
     main()
