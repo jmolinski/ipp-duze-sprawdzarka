@@ -314,7 +314,7 @@ def main(debug: bool, no_wait: bool, compile_only: bool) -> None:
         print(*Compiler(debug=debug).compile(raw_input), sep="\n", flush=True)
         exit(0)
 
-    Interpreter(no_wait=no_wait).run(Compiler(debug=debug).compile(raw_input))
+    Interpreter(no_wait=no_wait).run(DefaultCompiler(debug=debug).compile(raw_input))
 
 
 if __name__ == "__main__":
