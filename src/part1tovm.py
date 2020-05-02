@@ -13,10 +13,7 @@ skrypt na wejsciu bierze sciezke do pliku {nazwa_testu}.py, a na stdout
 wypluwa ten test skonwertowany na LISTE POLECEN w formacie 
 jezyka interpretera interactive mode.
 
-TODO I CO TO DAJE?
-Jak porownac wyniki ze wzorcowka?
-
-Usage: python part1topart2.py sciezka/do/testu.py > test.in
+Usage: python part1tovm.py sciezka/do/testu.py > test.ivml
 """
 
 original_gamma_new = part1.gamma_new
@@ -93,11 +90,12 @@ DEFAULT_WAIT_TIME = 0.25
 
 
 def skip_turns(to_skip: int) -> None:
-    STATEMENTS.append("SETWAIT 0")
-    for _ in range(to_skip):
-        STATEMENTS.append(f"SKIPTURN")
-        CURRENT_PLAYER.advance()
-    STATEMENTS.append(f"SETWAIT {DEFAULT_WAIT_TIME}")
+    if to_skip:
+        STATEMENTS.append("SETWAIT 0")
+        STATEMENTS.append(f"SKIPTURNS {to_skip}")
+        for _ in range(to_skip):
+            CURRENT_PLAYER.advance()
+        STATEMENTS.append(f"SETWAIT {DEFAULT_WAIT_TIME}")
 
 
 def gamma_new(

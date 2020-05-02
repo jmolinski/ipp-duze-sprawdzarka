@@ -16,6 +16,7 @@ START szerokosc wysokosc graczy obszarow
 MOVE
 GOLDEN
 SKIPTURN
+SKIPTURNS ile_razy
 
 GOTO kolumna wiersz
 UP
@@ -218,8 +219,12 @@ class Compiler:
         )
 
     def _compile_user_move(self, statement: str) -> CompiledInstruction:
-        code = {"MOVE": b" ", "GOLDEN": b"G", "SKIPTURN": b"C"}
+        code = {"MOVE": b" ", "GOLDEN": b"G"}
         return CompiledInstruction(op=InstructionType.VERBATIM, text=code[statement])
+
+    def _compile_skip_turns(self, statement: str, *args: str) -> CompiledInstruction:
+        times = 1 if statement == "SKIPTURN" else int(args[0])
+        return CompiledInstruction(op=InstructionType.VERBATIM, text=b"C" * times)
 
     def _compile_statement(
         self, statement: str, *args: str
@@ -238,6 +243,8 @@ class Compiler:
         if statement == "SETWAIT":
             self.wait_time = float(args[0])
             return [CompiledInstruction(op=InstructionType.NOOP)]
+        if statement in {"SKIPTURNS", "SKIPTURN"}:
+            compiled.append(self._compile_skip_turns(statement, *args))
         if statement in {"MOVE", "GOLDEN", "SKIPTURN"}:
             compiled.append(self._compile_user_move(statement))
         if statement == "GOTO":

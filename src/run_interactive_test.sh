@@ -25,7 +25,7 @@ trap 'rm -f "gamma_output"' INT TERM HUP EXIT
 
 plik_z_prawidlowym_wynikiem=${plik_testowany//.ivml/.vmr}
 
-python3 -u part2_interactive.py --nowait < "$plik_testowany" 1> "$native_gamma_input"
+python3 -u part2_ivm.py --nowait < "$plik_testowany" 1> "$native_gamma_input"
 "$gamma_executable" < "$native_gamma_input" > "$gamma_output"
 err=$?
 
