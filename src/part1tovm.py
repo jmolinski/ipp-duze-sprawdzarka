@@ -112,6 +112,11 @@ def gamma_new(
 
 def gamma_move(g: part1.Gamma, player: int, x: int, y: int, *args: Any) -> bool:
     ret = original_gamma_move(g, player, x, y)
+
+    # the move may be outside of the board -- we should simply ignore it here
+    if x < 0 or y < 0 or x >= g.board.width or y >= g.board.height:
+        return ret
+
     STATEMENTS.append(f"GOTO {x} {y}")
 
     skips_needed = CURRENT_PLAYER.count_skips_to_player(player)
@@ -127,6 +132,11 @@ def gamma_move(g: part1.Gamma, player: int, x: int, y: int, *args: Any) -> bool:
 
 def gamma_golden_move(g: part1.Gamma, player: int, x: int, y: int) -> bool:
     ret = original_gamma_golden_move(g, player, x, y)
+
+    # the move may be outside of the board -- we should simply ignore it here
+    if x < 0 or y < 0 or x >= g.board.width or y >= g.board.height:
+        return ret
+
     STATEMENTS.append(f"GOTO {x} {y}")
 
     skips_needed = CURRENT_PLAYER.count_skips_to_player(player)
