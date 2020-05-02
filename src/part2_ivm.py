@@ -245,7 +245,7 @@ class Compiler:
             return [CompiledInstruction(op=InstructionType.NOOP)]
         if statement in {"SKIPTURNS", "SKIPTURN"}:
             compiled.append(self._compile_skip_turns(statement, *args))
-        if statement in {"MOVE", "GOLDEN", "SKIPTURN"}:
+        if statement in {"MOVE", "GOLDEN"}:
             compiled.append(self._compile_user_move(statement))
         if statement == "GOTO":
             compiled.extend(self._compile_goto(int(args[0]), int(args[1])))
