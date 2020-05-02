@@ -1,9 +1,7 @@
 import enum
 import itertools
 import sys
-import termios
 import time
-import tty
 
 from dataclasses import dataclass
 from typing import Final, Iterable, List, Sequence, Tuple
@@ -27,11 +25,8 @@ LEFT
 
 SETWAIT float_czas_pomiedzy_ruchami
 END
-READ
 
 END powoduje wyslanie sygnalu EOF (nie jest wymagany!)
-READ moze znajdowac sie tylko na koncu (inaczej UB)
-READ powoduje wczytywanie polecen z stdin (bez weryfikacji!)
 UP/DOWN/RIGHT/LEFT moga powodowac problemy z przenosnoscia
 (a raczej: moga byc trudne do zrozumienia) kiedy wykonywane
 sa na granicach planszy. Jezeli chcesz zeby twoj skrypt byl 
@@ -39,6 +34,11 @@ przenosny bezpieczniej jest uzywac instrukcji GOTO, w
 przeciwnym wypadku musisz uwazac zeby nie "uderzac w sciane".
 
 wiersze puste i rozpoczynajace sie od # sa ignorowane
+
+Skrypt przyjmuje dodatkowe opcje konfiguracyjne:
+--compile-only   wypisuje skompilowane instrukcje i konczy dzialanie 
+--nowait         wylacza wszystkie instrukcje wait
+--debug          wyswietla dodatkowe informacje pomocne przy debuggowaniu
 
 UWAGA!
 KAZDA GRA POWINNA ZACZYNAC SIE (po START) OD
@@ -59,7 +59,7 @@ czy typy danych sie zgadzaja.
 Czy zmodyfikujesz interpreter/kompilator w inny sposob zalezy od ciebie,
 nie oczekuj pomocy, you're on your own.
 
-Wersja 0.1a
+Wersja 0.1b
 Wersja pythona 3.8, nie gwarantuje dzialania na starszych wersjach
 
 Licencja WTFPL
@@ -79,7 +79,6 @@ class Direction(enum.Enum):
 class InstructionType(enum.Enum):
     WAIT = enum.auto()
     VERBATIM = enum.auto()
-    READ = enum.auto()
     NOOP = enum.auto()
 
 
@@ -239,8 +238,6 @@ class Compiler:
         if statement == "SETWAIT":
             self.wait_time = float(args[0])
             return [CompiledInstruction(op=InstructionType.NOOP)]
-        if statement == "READ":
-            return [CompiledInstruction(op=InstructionType.READ)]
         if statement in {"MOVE", "GOLDEN", "SKIPTURN"}:
             compiled.append(self._compile_user_move(statement))
         if statement == "GOTO":
@@ -321,7 +318,7 @@ if __name__ == "__main__":
     no_wait = len(sys.argv) > 1 and any("nowait" in p.lower() for p in sys.argv[1:])
     debug = len(sys.argv) > 1 and any("debug" in p.lower() for p in sys.argv[1:])
     compile_only = len(sys.argv) > 1 and any(
-        "compile" in p.lower() for p in sys.argv[1:]
+        "compile-only" in p.lower() for p in sys.argv[1:]
     )
 
     main(debug, no_wait, compile_only)
