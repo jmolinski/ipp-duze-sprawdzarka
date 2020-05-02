@@ -73,13 +73,12 @@ class Gamma:
         if player == 0:
             return iter([])
         grouped_areas = self.board.get_grouped_areas()
-        free_coords = flatten(grouped_areas.get(Board.FREE_FIELD, []))
+        free_coords = list(flatten(grouped_areas.get(Board.FREE_FIELD, [])))
         player_areas = grouped_areas.get(player, [])
         if len(player_areas) < self.max_areas:
-            return free_coords
+            return flatten(self.board.get_grouped_areas()[Board.FREE_FIELD])
 
-        neighbor_getter = make_neighbor_getter(self.board.width, self.board.height)
-
+        neighbor_getter = make_neighbor_getter(self.board.height, self.board.width)
         return (
             coord
             for coord in free_coords

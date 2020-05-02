@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 import part1
 
@@ -96,6 +96,7 @@ def skip_turns(to_skip: int) -> None:
     STATEMENTS.append("SETWAIT 0")
     for _ in range(to_skip):
         STATEMENTS.append(f"SKIPTURN")
+        CURRENT_PLAYER.advance()
     STATEMENTS.append(f"SETWAIT {DEFAULT_WAIT_TIME}")
 
 
@@ -152,6 +153,9 @@ def main() -> None:
     part1.gamma_new = gamma_new
     part1.gamma_move = gamma_move
     part1.gamma_golden_move = gamma_golden_move
+    # we don't want to delete board after the test
+    # because we may need to read some metadata from it
+    part1.gamma_delete = lambda a: None
 
     try:
         path_to_test = sys.argv[1]
@@ -166,9 +170,19 @@ def main() -> None:
 
         STATEMENTS.clear()
         CURRENT_PLAYER.reset()
-        exec(test)
 
-        print(*STATEMENTS, sep="\n")
+        context: Dict[str, Any] = {}
+        exec(test, context, context)  # to zdefiniuje board w context
+        # bez tego przypisania edytor i mypy
+        # nie widzi nazwy board - bo jest tworzona dynamicznie w ctx
+        board = cast(part1.Gamma, context["board"])
+        assert board is not None
+
+        if len(sys.argv) > 2 and "--test" in sys.argv:
+            # output expected final board
+            print(part1.gamma_board(board), end="")
+        else:  # normal -- compile
+            print(*STATEMENTS, sep="\n")
 
 
 if __name__ == "__main__":
