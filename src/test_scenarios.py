@@ -49,13 +49,15 @@ def fill_board_without_collisions(store: StatementStoreType, **kwargs: Any) -> N
     doc = "gamma_move, fill board no collisions, many players, unlimited areas"
     store(make_comment(doc))
 
-    board = make_board(store, 10, 10, 30, 100)
+    height, width = int(kwargs.get("height", 10)), int(kwargs.get("width", 10))
+    players, areas = int(kwargs.get("players", 30)), int(kwargs.get("areas", 100))
+    board = make_board(store, width, height, players, areas)
 
-    all_fields = [(x, y) for x in range(10) for y in range(10)]
+    all_fields = [(x, y) for x in range(width) for y in range(height)]
     random.shuffle(all_fields)
 
     for (x, y) in all_fields:
-        player = random.randint(1, 30)
+        player = random.randint(1, players)
         store(assert_call(gamma_move, board, player, x, y))
 
     delete_board(store, board)
