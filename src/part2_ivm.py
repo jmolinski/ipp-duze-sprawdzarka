@@ -60,7 +60,7 @@ czy typy danych sie zgadzaja.
 Czy zmodyfikujesz interpreter/kompilator w inny sposob zalezy od ciebie,
 nie oczekuj pomocy, you're on your own.
 
-Wersja 0.1b
+Wersja 2020.05.02.22.48
 Wersja pythona 3.8, nie gwarantuje dzialania na starszych wersjach
 
 Licencja WTFPL
