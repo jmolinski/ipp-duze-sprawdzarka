@@ -16,6 +16,7 @@ START szerokosc wysokosc graczy obszarow
 MOVE
 GOLDEN
 SKIPTURN
+SKIPTURNS ile_razy
 
 GOTO kolumna wiersz
 UP
@@ -59,7 +60,7 @@ czy typy danych sie zgadzaja.
 Czy zmodyfikujesz interpreter/kompilator w inny sposob zalezy od ciebie,
 nie oczekuj pomocy, you're on your own.
 
-Wersja 0.1b
+Wersja 2020.05.02.22.48
 Wersja pythona 3.8, nie gwarantuje dzialania na starszych wersjach
 
 Licencja WTFPL
@@ -218,8 +219,12 @@ class Compiler:
         )
 
     def _compile_user_move(self, statement: str) -> CompiledInstruction:
-        code = {"MOVE": b" ", "GOLDEN": b"G", "SKIPTURN": b"C"}
+        code = {"MOVE": b" ", "GOLDEN": b"G"}
         return CompiledInstruction(op=InstructionType.VERBATIM, text=code[statement])
+
+    def _compile_skip_turns(self, statement: str, *args: str) -> CompiledInstruction:
+        times = 1 if statement == "SKIPTURN" else int(args[0])
+        return CompiledInstruction(op=InstructionType.VERBATIM, text=b"C" * times)
 
     def _compile_statement(
         self, statement: str, *args: str
@@ -238,7 +243,9 @@ class Compiler:
         if statement == "SETWAIT":
             self.wait_time = float(args[0])
             return [CompiledInstruction(op=InstructionType.NOOP)]
-        if statement in {"MOVE", "GOLDEN", "SKIPTURN"}:
+        if statement in {"SKIPTURNS", "SKIPTURN"}:
+            compiled.append(self._compile_skip_turns(statement, *args))
+        if statement in {"MOVE", "GOLDEN"}:
             compiled.append(self._compile_user_move(statement))
         if statement == "GOTO":
             compiled.extend(self._compile_goto(int(args[0]), int(args[1])))
@@ -307,7 +314,7 @@ def main(debug: bool, no_wait: bool, compile_only: bool) -> None:
         print(*Compiler(debug=debug).compile(raw_input), sep="\n", flush=True)
         exit(0)
 
-    Interpreter(no_wait=no_wait).run(Compiler(debug=debug).compile(raw_input))
+    Interpreter(no_wait=no_wait).run(DefaultCompiler(debug=debug).compile(raw_input))
 
 
 if __name__ == "__main__":
