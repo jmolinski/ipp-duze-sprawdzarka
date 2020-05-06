@@ -59,7 +59,7 @@ class Interpreter:
     def run(self, statements: List[str]) -> None:
         for s in statements:
             ret = self.run_statement(s)
-            if ret is False:
+            if not ret:
                 break
 
 
