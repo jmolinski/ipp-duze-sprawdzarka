@@ -37,7 +37,7 @@ przenosny bezpieczniej jest uzywac instrukcji GOTO, w
 przeciwnym wypadku musisz uwazac zeby nie "uderzac w sciane".
 SENDCODE kod_znaku przesłany bezpośrednio na wejście programu,
 nie może to być któryś z zarezerwowanych kodów.
-Seria instrukcji SENDCODE robiącą za strzałkę nie jest obsługiwana.
+Seria instrukcji SENDCODE robiącą za strzałkę nie jest zabezpieczona.
 
 wiersze puste i rozpoczynajace sie od # sa ignorowane
 
@@ -145,14 +145,14 @@ class Compiler:
         """
         return 0, 0
 
-    def _move_cursor(self, direction: Direction, torus: bool = False) -> None:
+    def _move_cursor(self, direction: Direction) -> None:
         """Ta funkcja przesuwa kursor na inne pole, zgodnie z kierunkiem
         oznaczajacym ktora strzalka ma zostac zasymulowana. Domyslna
         implementacja odpowiada implementacji ze 'sztywnymi scianami',
         czyli kiedy po dotarciu do sciany proba przesuniecia sie za nia
         jest ignorowana. Jezeli chcesz zeby zamiast tego na przyklad
         kursor zostal przeteleportowany na druga strone planszy,
-        musisz zmienić wartość argumentu torus na True.
+        musisz zmienić wartość zmiennej torus na True.
         argument direction to enum klasy Direction
         pozycje kursora modyfikuje sie zmieniajac wartosci przypisane
         do nazw self.x, self.y - x oznacza kolumne, y wiersz.
@@ -160,6 +160,7 @@ class Compiler:
         wysokosc planszy. Nie modyfikuj tych wartosci.
         Metoda niczego nie zwraca.
         """
+        torus = False
         if direction == Direction.UP:
             if self.y < self.height - 1:
                 self.y += 1
@@ -241,7 +242,7 @@ class Compiler:
         return CompiledInstruction(op=InstructionType.VERBATIM, text=b"C" * times)
 
     def _compile_sendcode(self, code: int) -> CompiledInstruction:
-        assert code not in map(ord, "cCgG ")
+        assert chr(code) not in "cCgG "
 
         return CompiledInstruction(op=InstructionType.VERBATIM, text=bytes([code]))
 
