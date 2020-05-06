@@ -23,7 +23,7 @@ class Interpreter:
 
         self.x, self.y = x, y
 
-    def run_statement(self, s: str) -> Optional[str]:
+    def run_statement(self, s: str) -> bool:
         tokens = [t.strip() for t in s.split()]
         cmd = tokens[0]
 
@@ -37,7 +37,7 @@ class Interpreter:
         if cmd == "GOTO":
             self.x, self.y = map(int, tokens[1:])
         if cmd == "END":
-            return "END"
+            return False
         if cmd == "MOVE":
             ret = gamma_move(self.g, self.player.current, self.x, self.y)
             if ret:
@@ -54,12 +54,12 @@ class Interpreter:
         if cmd in {"UP", "DOWN", "LEFT", "RIGHT"}:
             self.react_to_array_key(cmd)
 
-        return None
+        return True
 
     def run(self, statements: List[str]) -> None:
         for s in statements:
             ret = self.run_statement(s)
-            if ret == "END":
+            if ret is False:
                 break
 
 
