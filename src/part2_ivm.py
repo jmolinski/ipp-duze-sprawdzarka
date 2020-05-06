@@ -27,12 +27,17 @@ LEFT
 SETWAIT float_czas_pomiedzy_ruchami
 END
 
+SENDCODE kod_znaku
+
 END powoduje wyslanie sygnalu EOF (nie jest wymagany!)
 UP/DOWN/RIGHT/LEFT moga powodowac problemy z przenosnoscia
 (a raczej: moga byc trudne do zrozumienia) kiedy wykonywane
 sa na granicach planszy. Jezeli chcesz zeby twoj skrypt byl 
 przenosny bezpieczniej jest uzywac instrukcji GOTO, w 
 przeciwnym wypadku musisz uwazac zeby nie "uderzac w sciane".
+SENDCODE kod_znaku przesłany bezpośrednio na wejście programu,
+nie może to być któryś z zarezerwowanych kodów.
+Seria instrukcji SENDCODE robiącą za strzałkę nie jest zabezpieczona.
 
 wiersze puste i rozpoczynajace sie od # sa ignorowane
 
@@ -60,9 +65,10 @@ czy typy danych sie zgadzaja.
 Czy zmodyfikujesz interpreter/kompilator w inny sposob zalezy od ciebie,
 nie oczekuj pomocy, you're on your own.
 
-Wersja 2020.05.02.22.48
+Wersja 2020.05.06.18.27
 Wersja pythona 3.8, nie gwarantuje dzialania na starszych wersjach
 
+Autorzy: Jakub Moliński, Hubert Badocha
 Licencja WTFPL
 https://en.wikipedia.org/wiki/WTFPL
 + THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -146,7 +152,7 @@ class Compiler:
         czyli kiedy po dotarciu do sciany proba przesuniecia sie za nia
         jest ignorowana. Jezeli chcesz zeby zamiast tego na przyklad
         kursor zostal przeteleportowany na druga strone planszy,
-        musisz zmodyfikowac te metode.
+        musisz zmienić wartość zmiennej torus na True.
         argument direction to enum klasy Direction
         pozycje kursora modyfikuje sie zmieniajac wartosci przypisane
         do nazw self.x, self.y - x oznacza kolumne, y wiersz.
@@ -154,18 +160,27 @@ class Compiler:
         wysokosc planszy. Nie modyfikuj tych wartosci.
         Metoda niczego nie zwraca.
         """
+        torus = False
         if direction == Direction.UP:
             if self.y < self.height - 1:
                 self.y += 1
+            elif torus:
+                self.y = 0
         elif direction == Direction.DOWN:
             if self.y > 0:
                 self.y -= 1
+            elif torus:
+                self.y = self.height - 1
         elif direction == Direction.RIGHT:
             if self.x < self.width - 1:
                 self.x += 1
+            elif torus:
+                self.x = 0
         elif direction == Direction.LEFT:
             if self.x > 0:
                 self.x -= 1
+            elif torus:
+                self.x = self.width - 1
 
     def _compile_start_instruction(self, args: Sequence[str]) -> CompiledInstruction:
         self.width, self.height, self.players, self.areas = map(int, args)
@@ -226,6 +241,11 @@ class Compiler:
         times = 1 if statement == "SKIPTURN" else int(args[0])
         return CompiledInstruction(op=InstructionType.VERBATIM, text=b"C" * times)
 
+    def _compile_sendcode(self, code: int) -> CompiledInstruction:
+        assert chr(code) not in "cCgG "
+
+        return CompiledInstruction(op=InstructionType.VERBATIM, text=bytes([code]))
+
     def _compile_statement(
         self, statement: str, *args: str
     ) -> List[CompiledInstruction]:
@@ -251,6 +271,8 @@ class Compiler:
             compiled.extend(self._compile_goto(int(args[0]), int(args[1])))
         if statement in {"UP", "DOWN", "LEFT", "RIGHT"}:
             compiled.append(self._compile_arrow_move(Direction(statement)))
+        if statement == "SENDCODE":
+            compiled.append(self._compile_sendcode(int(args[0])))
 
         if not compiled:
             raise ValueError(f"Invalid instruction: {statement}")
