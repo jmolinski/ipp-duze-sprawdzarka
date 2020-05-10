@@ -37,7 +37,7 @@ przenosny bezpieczniej jest uzywac instrukcji GOTO, w
 przeciwnym wypadku musisz uwazac zeby nie "uderzac w sciane".
 SENDCODE kod_znaku przesłany bezpośrednio na wejście programu,
 nie może to być któryś z zarezerwowanych kodów.
-Seria instrukcji SENDCODE robiącą za strzałkę nie jest zabezpieczona.
+Seria instrukcji SENDCODE robiaca za strzałkę nie jest zabezpieczona.
 
 wiersze puste i rozpoczynajace sie od # sa ignorowane
 

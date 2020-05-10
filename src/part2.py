@@ -1,8 +1,14 @@
 import sys
-
 from typing import List, Optional
-
 import part1
+
+
+
+WHITESPACES = "\t \v\f\r"
+
+def isspace(s: str) -> bool:
+    return all(map(lambda c: c in WHITESPACES, s))
+
 
 MAX_UINT32 = 2 ** 32 - 1
 
@@ -15,7 +21,7 @@ board: Optional[part1.Gamma] = None
 
 def parse_unsigned_ints(string: str, expected: int) -> Optional[List[int]]:
     for c in string:
-        if not c.isspace() and not c.isdigit():
+        if not isspace(c) and not c.isdigit():
             return None
 
     try:
@@ -75,7 +81,9 @@ def run_start_game_command(command: str, raw_args: str, line: int) -> None:
 def run_command(statement: str, line: int) -> bool:
     global board
     command, raw_args = statement[0], statement[1:]
-
+    if raw_args and not isspace(raw_args[0]):
+        print(f"ERROR {line}", file=sys.stderr)
+        return False
     if board is None:
         run_start_game_command(command, raw_args, line)
     else:
@@ -85,12 +93,14 @@ def run_command(statement: str, line: int) -> bool:
 
 
 def main() -> None:
-    statements = sys.stdin.read().splitlines(keepends=True)
+    statements = sys.stdin.read()
+    split_statements = statements.split("\n")
 
-    for line, statement in enumerate(statements, start=1):
-        if statement[-1] != "\n":
-            print(f"ERROR {line}")
-        elif statement == "\n" or statement[0] == "#":
+    for line, statement in enumerate(split_statements, start=1):
+        if line == len(split_statements):
+            if statement != "":
+                print(f"ERROR {line}", file=sys.stderr)
+        elif statement == "" or statement[0] == "#":
             pass
         else:
             end_game = run_command(statement, line)

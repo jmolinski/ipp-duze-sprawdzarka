@@ -6,6 +6,7 @@ import random
 import sys
 
 from typing import Any, List
+from part2 import WHITESPACES
 
 """
 Testy w stylu part1 moga zostac skonwertowane tym skryptem na wersje
@@ -18,6 +19,7 @@ aby wyprodukowac pliki .out i .err
 
 Usage: python part1topart2.py sciezka/do/testu.py > test.in
 """
+
 
 STATEMENTS: List[str] = []
 
@@ -59,7 +61,7 @@ def make_random_spacing(threshold: float = 0.1) -> str:
     crazy = random.random() < threshold
     if crazy:
         length = random.choice(range(5, 15))
-        characters = "\t \v\f\r"
+        characters = WHITESPACES
     else:
         if threshold == 0:
             characters = " "
