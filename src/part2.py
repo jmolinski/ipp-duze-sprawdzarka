@@ -1,5 +1,4 @@
 import sys
-
 from typing import List, Optional
 
 import part1
@@ -85,11 +84,13 @@ def run_command(statement: str, line: int) -> bool:
 
 
 def main() -> None:
-    statements = sys.stdin.read().splitlines(keepends=True)
+    statements = sys.stdin.read()
+    split_statements = statements.split('\n')
 
-    for line, statement in enumerate(statements, start=1):
-        if statement[-1] != "\n":
-            print(f"ERROR {line}")
+    for line, statement in enumerate(split_statements, start=1):
+        if line == len(split_statements):
+            if statement != '':
+                print(f"ERROR {line}", file=sys.stderr)
         elif statement == "\n" or statement[0] == "#":
             pass
         else:
