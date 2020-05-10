@@ -91,7 +91,7 @@ def main() -> None:
         if line == len(split_statements):
             if statement != '':
                 print(f"ERROR {line}", file=sys.stderr)
-        elif statement == "\n" or statement[0] == "#":
+        elif statement == "" or statement[0] == "#":
             pass
         else:
             end_game = run_command(statement, line)
