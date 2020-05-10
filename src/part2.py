@@ -72,7 +72,7 @@ def run_start_game_command(command: str, raw_args: str, line: int) -> None:
         return
 
 
-def run_command(statement: str, line: int) -> None:
+def run_command(statement: str, line: int) -> bool:
     global board
     command, raw_args = statement[0], statement[1:]
 
@@ -80,6 +80,8 @@ def run_command(statement: str, line: int) -> None:
         run_start_game_command(command, raw_args, line)
     else:
         run_batch_mode_command(command, raw_args, line)
+
+    return False
 
 
 def main() -> None:
@@ -91,7 +93,9 @@ def main() -> None:
         elif statement == "\n" or statement[0] == "#":
             pass
         else:
-            run_command(statement, line)
+            end_game = run_command(statement, line)
+            if end_game:
+                return
 
 
 if __name__ == "__main__":

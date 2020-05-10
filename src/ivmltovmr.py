@@ -2,8 +2,8 @@ import sys
 
 from typing import List, Optional
 
+from converters.part1tovm import PlayerPointer
 from part1 import Gamma, gamma_board, gamma_golden_move, gamma_move, gamma_new
-from part1tovm import PlayerPointer
 
 
 class Interpreter:

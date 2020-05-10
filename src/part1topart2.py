@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 import sys
 
 from typing import Any, List
@@ -53,7 +54,82 @@ def gamma_board(g: Any) -> None:
     STATEMENTS.append("p")
 
 
+def make_random_spacing(threshold: float = 0.1) -> str:
+    length = random.choice(range(1, 8)) if threshold > 0 else 1
+    crazy = random.random() < threshold
+    if crazy:
+        length = random.choice(range(5, 15))
+        characters = "\t \v\f\r"
+    else:
+        if threshold == 0:
+            characters = " "
+        else:
+            characters = " \t"
+    return "".join(random.choices(characters, k=length))
+
+
+def obfuscate_line(line: str) -> str:
+    if not line or line[0] == '#':
+        return line
+    
+    cmd = line[0]
+    args = [int(a) for a in line[1:].split()]
+
+    if random.random() < 0.9:
+        # większość linijek powinna pozostać bez zmian
+        return line
+
+    if random.random() < 0.1:  # slightly change arg value
+        if args:
+            position = random.randrange(len(args))
+            args[position] += random.randint(-10, 10)
+
+    if random.random() < 0.1:  # set small random arg value
+        if args:
+            position = random.randrange(len(args))
+            args[position] = random.randint(-10, 10)
+
+    if random.random() < 0.1:  # set gigantic random arg value
+        if args:
+            position = random.randrange(len(args))
+            args[position] = random.randint(-(2 ** 4096), 2 ** 4096)
+
+    obfuscated = list(cmd + "".join(str(a) for a in args))
+    
+    if random.random() < 0.1:  # remove char
+        obfuscated.pop(len(obfuscated) - 1)
+
+    if random.random() < 0.1 and obfuscated:  # insert string
+        for _ in range(random.randrange(1, 4)):
+            rand_code = random.randint(0, 255)
+            obfuscated.insert(random.randrange(len(obfuscated)), chr(rand_code))
+
+    if random.random() < 0.1 and obfuscated:  # swap
+        p, q = random.randrange(len(obfuscated)), random.randrange(len(obfuscated))
+        obfuscated[p], obfuscated[q] = obfuscated[q], obfuscated[p]
+    
+    obfuscated_line = "".join(obfuscated)
+    obfuscated = obfuscated_line.split(" ")
+
+    if random.random() < 0.2:  # spacing
+        random_spacing = make_random_spacing()
+        obfuscated_line = random_spacing.join(obfuscated)
+    else:
+        obfuscated_line = "".join(obfuscated)
+
+    if cmd in "IB":
+        # jeśli linijka była prawidłowa, nie ma już po niej raczej prawidłowych polecen I/B
+        # zatem aby reszta testu się wykonała poprawnie, gra musi zostać jednak utworzona
+        return obfuscated_line + line
+
+    return obfuscated_line
+
+
 def main() -> None:
+    obfuscate = len(sys.argv) > 1 and any(
+        "obfuscate" in p.lower() for p in sys.argv[1:]
+    )
+
     import part1
 
     part1.gamma_new = gamma_new
@@ -76,8 +152,12 @@ def main() -> None:
         with open(path_to_test) as f:
             test = f.read().replace("assert ", "")
 
+        global STATEMENTS
         STATEMENTS.clear()
         exec(test)
+
+        if obfuscate:
+            STATEMENTS = [obfuscate_line(s) for s in STATEMENTS]
 
         print(*STATEMENTS, sep="\n")
 
