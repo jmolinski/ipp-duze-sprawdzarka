@@ -69,6 +69,9 @@ def make_random_spacing(threshold: float = 0.1) -> str:
 
 
 def obfuscate_line(line: str) -> str:
+    if not line or line[0] == '#':
+        return line
+    
     cmd = line[0]
     args = [int(a) for a in line[1:].split()]
 
@@ -92,18 +95,21 @@ def obfuscate_line(line: str) -> str:
             args[position] = random.randint(-(2 ** 4096), 2 ** 4096)
 
     obfuscated = list(cmd + "".join(str(a) for a in args))
-
+    
     if random.random() < 0.1:  # remove char
         obfuscated.pop(len(obfuscated) - 1)
 
-    if random.random() < 0.1:  # insert string
+    if random.random() < 0.1 and obfuscated:  # insert string
         for _ in range(random.randrange(1, 4)):
             rand_code = random.randint(0, 255)
             obfuscated.insert(random.randrange(len(obfuscated)), chr(rand_code))
 
-    if random.random() < 0.1:  # swap
+    if random.random() < 0.1 and obfuscated:  # swap
         p, q = random.randrange(len(obfuscated)), random.randrange(len(obfuscated))
         obfuscated[p], obfuscated[q] = obfuscated[q], obfuscated[p]
+    
+    obfuscated_line = "".join(obfuscated)
+    obfuscated = obfuscated_line.split(" ")
 
     if random.random() < 0.2:  # spacing
         random_spacing = make_random_spacing()
