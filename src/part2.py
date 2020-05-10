@@ -74,7 +74,9 @@ def run_start_game_command(command: str, raw_args: str, line: int) -> None:
 def run_command(statement: str, line: int) -> bool:
     global board
     command, raw_args = statement[0], statement[1:]
-
+    if raw_args and not raw_args[0].isspace():
+        print(f"ERROR {line}", file=sys.stderr)
+        return False
     if board is None:
         run_start_game_command(command, raw_args, line)
     else:
