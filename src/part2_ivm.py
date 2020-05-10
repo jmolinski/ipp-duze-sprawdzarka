@@ -336,7 +336,12 @@ def main(debug: bool, no_wait: bool, compile_only: bool) -> None:
         print(*Compiler(debug=debug).compile(raw_input), sep="\n", flush=True)
         exit(0)
 
-    Interpreter(no_wait=no_wait).run(DefaultCompiler(debug=debug).compile(raw_input))
+    try:
+        Interpreter(no_wait=no_wait).run(
+            DefaultCompiler(debug=debug).compile(raw_input)
+        )
+    except BrokenPipeError as e:
+        print(f"Broken pipe {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":
