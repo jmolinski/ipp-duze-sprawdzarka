@@ -6,6 +6,7 @@ import random
 import sys
 
 from typing import Any, List
+
 from part2 import WHITESPACES
 
 """
@@ -71,9 +72,9 @@ def make_random_spacing(threshold: float = 0.1) -> str:
 
 
 def obfuscate_line(line: str) -> str:
-    if not line or line[0] == '#':
+    if not line or line[0] == "#":
         return line
-    
+
     cmd = line[0]
     args = [int(a) for a in line[1:].split()]
 
@@ -97,7 +98,7 @@ def obfuscate_line(line: str) -> str:
             args[position] = random.randint(-(2 ** 4096), 2 ** 4096)
 
     obfuscated = list(cmd + "".join(str(a) for a in args))
-    
+
     if random.random() < 0.1:  # remove char
         obfuscated.pop(len(obfuscated) - 1)
 
@@ -109,7 +110,7 @@ def obfuscate_line(line: str) -> str:
     if random.random() < 0.1 and obfuscated:  # swap
         p, q = random.randrange(len(obfuscated)), random.randrange(len(obfuscated))
         obfuscated[p], obfuscated[q] = obfuscated[q], obfuscated[p]
-    
+
     obfuscated_line = "".join(obfuscated)
     obfuscated = obfuscated_line.split(" ")
 

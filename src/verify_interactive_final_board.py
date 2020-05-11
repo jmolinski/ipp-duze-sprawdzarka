@@ -1,3 +1,4 @@
+import re
 import sys
 
 
@@ -7,7 +8,9 @@ def verify_board(raw_result: str, expected_board: str) -> bool:
     biblioteki do obslugi terminala albo rysujesz ramki itp
     to musisz zmodyfikowac te metoda tak, zeby sobie z tym poradzila
     Zwraca True jezeli wynik jest prawidlowy, wpp False"""
-    return expected_board in raw_result
+    result = raw_result.encode("ASCII").replace(b"\33[0m", b"").decode("ASCII")
+    final_board = re.findall(r"(([\.\d]+\n)+)", result)[-1][0]
+    return expected_board in final_board
 
 
 def main(result_path: str, expected_path: str) -> int:
@@ -16,10 +19,7 @@ def main(result_path: str, expected_path: str) -> int:
     with open(expected_path) as f:
         expected_board = f.read()
 
-    if expected_board in result:
-        return 0
-
-    return 1
+    return int(not verify_board(result, expected_board))
 
 
 if __name__ == "__main__":

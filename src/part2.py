@@ -1,10 +1,11 @@
 import sys
+
 from typing import List, Optional
+
 import part1
 
-
-
 WHITESPACES = "\t \v\f\r"
+
 
 def isspace(s: str) -> bool:
     return all(map(lambda c: c in WHITESPACES, s))
