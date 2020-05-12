@@ -8,8 +8,17 @@ def verify_board(raw_result: str, expected_board: str) -> bool:
     biblioteki do obslugi terminala albo rysujesz ramki itp
     to musisz zmodyfikowac te metoda tak, zeby sobie z tym poradzila
     Zwraca True jezeli wynik jest prawidlowy, wpp False"""
-    result = raw_result.encode("ASCII").replace(b"\33[0m", b"").decode("ASCII")
-    final_board = re.findall(r"(([\.\d]+\n)+)", result)[-1][0]
+    result = (
+        raw_result.encode("ASCII")
+        .replace(b"\33[0m", b"")
+        .replace(b"\33[?25h", b"")
+        .replace(b"\33[2j", b"")
+        .replace(b"\33[H", b"")
+        .replace(b"\33[30;47m", b"")
+        .decode("ASCII")
+    )
+    matched = re.findall(r"(([\.\d]+\n)+)", result)
+    final_board = [f for (f, s) in matched if f.count("\n") > 1][-1]
     return expected_board in final_board
 
 

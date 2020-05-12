@@ -19,7 +19,10 @@ class Interpreter:
 
         assert self.g is not None
         if x < 0 or y < 0 or x >= self.g.board.width or y >= self.g.board.height:
-            exit("Wyjscie strzalka poza plansze, zagrozenie kompatybilnosci")
+            if any("force" in arg for arg in sys.argv):
+                pass
+            else:
+                exit("Wyjscie strzalka poza plansze, zagrozenie kompatybilnosci")
 
         self.x, self.y = x, y
 
