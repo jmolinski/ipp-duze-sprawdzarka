@@ -7,11 +7,16 @@ def normalize_pyte(raw_result: str) -> str:
     do wyrenderowania finalnej planszy
     wymaga zainstalowania paczki `pyte` z pip
 
-    pyte nie wzpiera następujących ansi escape codes:
+    pyte nie wspiera następujących ansi escape codes:
     Esc[s -- save cursor position
     Esc[u -- restore cursor position
+    i potencjalnie jakies inne
     """
-    import pyte
+    try:
+        import pyte
+    except ImportError:
+        print("`pyte` nie jest zainstalowane lub nie jest widoczne dla skryptu")
+        sys.exit(2)
 
     screen = pyte.Screen(100, 30)
     stream = pyte.Stream(screen)
@@ -33,7 +38,6 @@ def normalize_naive(raw_result: str) -> str:
         .replace(b"\33[30;47m", b"")
         .replace(b"\33[K", b"")
         .replace(b"\33[7m", b"")
-        .replace(b"\33[0m", b"")
         .decode("ASCII")
     )
 
@@ -49,6 +53,8 @@ def verify_board(raw_result: str, expected_board: str) -> bool:
     przez zastepowanie kodow, albo semi-inteligentnie renderujac
     caly output do finalnej postaci uzywajac emulatora terminala
     pyte -- domyslnie uzywana jest opcja naiwna
+
+    sprawdzarka NIE ZADZIAŁA dla plansz o liczbie wierszy mniejszej niż 2
     """
 
     use_pyte = False
