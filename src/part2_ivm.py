@@ -150,37 +150,25 @@ class Compiler:
         oznaczajacym ktora strzalka ma zostac zasymulowana. Domyslna
         implementacja odpowiada implementacji ze 'sztywnymi scianami',
         czyli kiedy po dotarciu do sciany proba przesuniecia sie za nia
-        jest ignorowana. Jezeli chcesz zeby zamiast tego na przyklad
-        kursor zostal przeteleportowany na druga strone planszy,
-        musisz zmienić wartość zmiennej torus na True.
-        argument direction to enum klasy Direction
+        jest ignorowana. Argument direction to enum klasy Direction
         pozycje kursora modyfikuje sie zmieniajac wartosci przypisane
         do nazw self.x, self.y - x oznacza kolumne, y wiersz.
         self.width i self.height oznaczaja odpowiednio szerokosc i
         wysokosc planszy. Nie modyfikuj tych wartosci.
         Metoda niczego nie zwraca.
         """
-        torus = False
         if direction == Direction.UP:
             if self.y < self.height - 1:
                 self.y += 1
-            elif torus:
-                self.y = 0
         elif direction == Direction.DOWN:
             if self.y > 0:
                 self.y -= 1
-            elif torus:
-                self.y = self.height - 1
         elif direction == Direction.RIGHT:
             if self.x < self.width - 1:
                 self.x += 1
-            elif torus:
-                self.x = 0
         elif direction == Direction.LEFT:
             if self.x > 0:
                 self.x -= 1
-            elif torus:
-                self.x = self.width - 1
 
     def _compile_start_instruction(self, args: Sequence[str]) -> CompiledInstruction:
         self.width, self.height, self.players, self.areas = map(int, args)
