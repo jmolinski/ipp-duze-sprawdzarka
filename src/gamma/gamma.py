@@ -70,7 +70,7 @@ class Gamma:
 
     # kolejnosć y x
     def get_free_fields_coords(self, player: int) -> Iterator[Tuple[int, int]]:
-        if player == 0:
+        if player == 0 or player > self.players:
             return iter([])
         grouped_areas = self.board.get_grouped_areas()
         free_coords = flatten(grouped_areas.get(Board.FREE_FIELD, []))
@@ -98,13 +98,15 @@ class Gamma:
         return False
 
     def get_busy_fields(self, player: int) -> int:
-        if player == 0:
+        if player == 0 or player > self.players:
             return 0
         return sum(
             list(row.values()).count(player) for row in self.board.board.values()
         )
 
     def is_golden_possible(self, player: int) -> bool:
+        if player == 0 or player > self.players:
+            return False
         if player in self._golden_move_done:
             return False
 
