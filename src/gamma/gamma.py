@@ -113,6 +113,11 @@ class Gamma:
         if not set(grouped_areas.keys()) - {player, Board.FREE_FIELD}:
             return False
 
+        areas_by_player = self.board.get_grouped_areas()
+        if Board.FREE_FIELD in areas_by_player:
+            del areas_by_player[Board.FREE_FIELD]
+        if len(areas_by_player[player]) < self.max_areas:
+            return True
         for y, row in enumerate(self.board.board.values()):
             for x, column in enumerate(row):
                 prev_player = self.board.board[x][y]
