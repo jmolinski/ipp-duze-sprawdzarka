@@ -119,7 +119,7 @@ class Gamma:
         if len(areas_by_player[player]) < self.max_areas:
             return True
         for y, row in enumerate(self.board.board.values()):
-            for x in len(row):
+            for x in len(row.values()):
                 prev_player = self.board.board[x][y]
                 if prev_player != 0 and self.try_golden_move(player, x, y, False):
                     self.board.board[x][y] = prev_player
