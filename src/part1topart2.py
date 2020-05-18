@@ -6,6 +6,7 @@ import random
 import sys
 
 from typing import Any, List
+from part2 import WHITESPACES
 
 from part2 import WHITESPACES
 
