@@ -122,6 +122,6 @@ class Gamma:
             for x, column in enumerate(row):
                 prev_player = self.board.board[x][y]
                 if prev_player != 0 and self.try_golden_move(player, x, y, False):
-                    self.try_golden_move(prev_player, x, y, False)
+                    self.board.board[x][y] = prev_player
                     return True
         return False
