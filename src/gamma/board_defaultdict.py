@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Callable, Mapping, MutableMapping, cast
+from typing import Callable, Mapping, MutableMapping, cast
 
 
 class BoardDefaultRowCol(defaultdict):

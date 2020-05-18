@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import itertools
-
 from typing import Iterator, List, Set, Tuple
 
 from gamma.board import Board
@@ -46,10 +45,12 @@ class Gamma:
         self.board.board[row][column] = player
         return True
 
-    def try_golden_move(self, player: int, column: int, row: int) -> bool:
+    def try_golden_move(
+        self, player: int, column: int, row: int, check_golden_done: bool = True
+    ) -> bool:
         if player == 0:
             return False
-        if player in self._golden_move_done:
+        if check_golden_done and player in self._golden_move_done:
             return False
 
         field = self.board.board[row][column]
@@ -58,7 +59,7 @@ class Gamma:
 
         self.board.board[row][column] = Board.FREE_FIELD
         moved = self.try_move(player, column, row)
-        if moved:
+        if moved and check_golden_done:
             self._golden_move_done.add(player)
         else:
             self.board.board[row][column] = field
@@ -109,4 +110,13 @@ class Gamma:
             return False
 
         grouped_areas = self.board.get_grouped_areas()
-        return bool(set(grouped_areas.keys()) - {player, Board.FREE_FIELD})
+        if not set(grouped_areas.keys()) - {player, Board.FREE_FIELD}:
+            return False
+
+        for y, row in enumerate(self.board.board.values()):
+            for x, column in enumerate(row):
+                prev_player = self.board.board[x][y]
+                if prev_player != 0 and self.try_golden_move(player, x, y, False):
+                    self.try_golden_move(prev_player, x, y, False)
+                    return True
+        return False
