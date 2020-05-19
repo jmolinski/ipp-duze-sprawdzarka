@@ -90,7 +90,7 @@ def process_assignment(line: str) -> str:
     value = ""
     if len(split) == 2:
         name = get_name(split[0])
-        value = split[1].split(";")[0]
+        value = check_null(split[1].split(";")[0])
     return " ".join([name, "=", value])
 
 
