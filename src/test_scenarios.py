@@ -23,6 +23,7 @@ from test_tools import (
     flatten,
     get_all_board_coords,
     get_coords_around,
+    make_assert,
     make_board,
     make_comment,
     unsafe_gamma_move,
@@ -480,6 +481,44 @@ def test_busy_fields_complexity(store: StatementStoreType, **kwargs: Any) -> Non
     delete_board(store, board)
 
 
+def test_snake_gamma_possible_complexity(
+    store: StatementStoreType, **kwargs: Any
+) -> None:
+    doc = """gamma_golden_possible complexity
+    sample board:
+    1111
+    ...1
+    1111
+    1...
+    ....
+    ...2"""
+    store(make_comment(doc))
+
+    side_size = int(kwargs.get("side_size", 10))
+    golden_possible_queries = int(kwargs.get("golden_possible_queries", side_size))
+    assert side_size > 4, "side size must be >= 5"
+    width, height, players, areas = side_size, side_size, 2, 1
+
+    board = make_board(store, height, width, players, areas)
+
+    store(assert_call(unsafe_gamma_move, board, 2, width - 1, height - 1))
+    for row in range(side_size - 2):
+        if row % 2 == 0:
+            indices = range(width) if row % 4 == 0 else reversed(range(width))
+            for x in indices:
+                store(assert_call(unsafe_gamma_move, board, 1, x, row))
+        else:
+            pos_in_row = width - 1 if row % 4 == 1 else 0
+            store(assert_call(unsafe_gamma_move, board, 1, pos_in_row, row))
+
+    assert_board_equal(store, board)
+
+    for p in cycle_players(players, take=golden_possible_queries):
+        store(make_assert(f"gamma_golden_possible(board, {p})", "0"))
+
+    delete_board(store, board)
+
+
 scenarios: Dict[str, ScenarioType] = {
     "fill_board_with_collisions": fill_board_with_collisions,
     "fill_board_without_collisions": fill_board_without_collisions,
@@ -497,6 +536,7 @@ scenarios: Dict[str, ScenarioType] = {
     "test_golden_move_complexity_many_splits": test_golden_move_complexity_many_splits,
     "test_free_fields_complexity": test_free_fields_complexity,
     "test_busy_fields_complexity": test_busy_fields_complexity,
+    "test_snake_gamma_possible_complexity": test_snake_gamma_possible_complexity,
 }
 
 __all__ = ["scenarios"]

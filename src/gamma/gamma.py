@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+
 from typing import Iterator, List, Set, Tuple
 
 from gamma.board import Board
