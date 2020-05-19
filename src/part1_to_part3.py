@@ -54,7 +54,6 @@ def main() -> None:
                     i += 1
                 else:
                     print(line)
-                    pass
 
 
 if __name__ == "__main__":
