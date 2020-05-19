@@ -121,7 +121,10 @@ class Gamma:
         for y, row in self.board.board.items():
             for x in row.keys():
                 prev_player = self.board.board[x][y]
-                if prev_player != 0 and self.try_golden_move(player, x, y, False):
+                if prev_player == player or prev_player == Board.FREE_FIELD:
+                    continue
+
+                if self.try_golden_move(player, x, y, False):
                     self.board.board[x][y] = prev_player
                     return True
 
