@@ -78,9 +78,7 @@ def run_start_game_command(command: str, raw_args: str, line: int) -> None:
             print("OK", line)
             return
 
-    if board is None:
-        print(f"ERROR {line}", file=sys.stderr)
-        return
+    print(f"ERROR {line}", file=sys.stderr)
 
 
 def run_command(statement: str, line: int) -> bool:
