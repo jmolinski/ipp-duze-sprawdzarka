@@ -57,7 +57,7 @@ class Gamma:
         if field == Board.FREE_FIELD or field == player:
             return False
 
-        self.board.board[row][column] = Board.FREE_FIELD
+        del self.board.board[row][column]
         moved = self.try_move(player, column, row)
         if moved and check_golden_done:
             self._golden_move_done.add(player)
@@ -115,17 +115,16 @@ class Gamma:
         if not set(grouped_areas.keys()) - {player, Board.FREE_FIELD}:
             return False
 
-        if len(grouped_areas[player]) < self.max_areas:
+        if len(grouped_areas.get(player, [])) < self.max_areas:
             return True
 
-        for y, row in self.board.board.items():
-            for x in row.keys():
-                prev_player = self.board.board[x][y]
+        for y, column in self.board.board.items():
+            for x, prev_player in list(column.items()):
                 if prev_player == player or prev_player == Board.FREE_FIELD:
                     continue
-
+                assert prev_player == self.board.board[y][x]
                 if self.try_golden_move(player, x, y, False):
-                    self.board.board[x][y] = prev_player
+                    self.board.board[y][x] = prev_player
                     return True
 
         return False
