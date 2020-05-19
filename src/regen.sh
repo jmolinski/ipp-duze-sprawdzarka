@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 
 shopt -s nullglob
-for f in out/generated_batch/*.in; do python part2.py <$f 1> "${f%.*}.out" 2> "${f%.*}.err"; done
+for f in $(find . -type f -name "*.in" -print0 | xargs -0); do
+  echo "$f"
+  python part2.py <"$f" > "${f%.*}.out" 2> "${f%.*}.err"
+done

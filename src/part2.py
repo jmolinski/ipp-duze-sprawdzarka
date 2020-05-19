@@ -63,20 +63,22 @@ def run_batch_mode_command(command: str, raw_args: str, line: int) -> None:
 
 
 def run_start_game_command(command: str, raw_args: str, line: int) -> None:
-    global board
-    if board is None and command == "I":
-        raise NotImplemented("interactive mode is not supported")
-    elif board is None and command == "B":
-        args = parse_unsigned_ints(raw_args, expected=COMMAND_ARGS[command])
-        if args is None:
-            print(f"ERROR {line}", file=sys.stderr)
-            return
-        board = part1.gamma_new(*args)
-        print("OK", line)
-
-    if board is None:
+    if command not in "BI":
         print(f"ERROR {line}", file=sys.stderr)
         return
+    global board
+    args = parse_unsigned_ints(raw_args, expected=COMMAND_ARGS[command])
+    if args is None:
+        print(f"ERROR {line}", file=sys.stderr)
+        return
+    if board := part1.gamma_new(*args):
+        if command == "I":
+            raise NotImplemented("interactive mode is not supported")
+        elif command == "B":
+            print("OK", line)
+            return
+
+    print(f"ERROR {line}", file=sys.stderr)
 
 
 def run_command(statement: str, line: int) -> bool:
