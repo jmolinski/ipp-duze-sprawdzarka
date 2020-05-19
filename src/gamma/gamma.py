@@ -115,13 +115,14 @@ class Gamma:
         if not set(grouped_areas.keys()) - {player, Board.FREE_FIELD}:
             return False
 
-        areas_by_player = self.board.get_grouped_areas()
-        if len(areas_by_player[player]) < self.max_areas:
+        if len(grouped_areas[player]) < self.max_areas:
             return True
+
         for y, row in self.board.board.items():
             for x in row.keys():
                 prev_player = self.board.board[x][y]
                 if prev_player != 0 and self.try_golden_move(player, x, y, False):
                     self.board.board[x][y] = prev_player
                     return True
+
         return False
